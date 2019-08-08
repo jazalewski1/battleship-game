@@ -1,0 +1,2 @@
+# Template SFML Project
+### empty
