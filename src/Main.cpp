@@ -1,10 +1,10 @@
-#include <SFML/Graphics.hpp>
+#include "SFML/Graphics.hpp"
 
-const sf::Vector2u winsize (640, 480);
+const sf::Vector2u winsize {640, 480};
 
 int main()
 {
-	sf::RenderWindow window (sf::VideoMode(winsize.x, winsize.y), "Template title");
+	sf::RenderWindow window {sf::VideoMode{winsize.x, winsize.y}, "Template title"};
 
 	while(window.isOpen())
 	{
