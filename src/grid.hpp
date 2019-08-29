@@ -17,6 +17,8 @@ class Grid : public sf::Drawable
 	private:
 		std::unordered_map<sf::Vector2i, Cell> m_cells;
 
+		Cell* m_hoverCell;
+
 	private:
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const
 		{
@@ -24,8 +26,11 @@ class Grid : public sf::Drawable
 				target.draw(elem.second, states);
 		}
 
+
+
 	public:
-		Grid(sf::Vector2i offset, sf::Vector2i size)
+		Grid(sf::Vector2i offset, sf::Vector2i size) :
+			m_hoverCell{nullptr}
 		{
 			for(int y = 0; y < size.y; ++y)
 			{
@@ -44,7 +49,19 @@ class Grid : public sf::Drawable
 
 		void hover(sf::Vector2f mouse)
 		{
+			sf::Vector2i index {ftoi(mouse)};
+			auto search {m_cells.find(index)};
 
+			if(m_hoverCell != nullptr)
+				m_hoverCell->defaultColor();
+
+			if(search != m_cells.end())
+				m_hoverCell = &(search->second);
+			else
+				m_hoverCell = nullptr;
+
+			if(m_hoverCell != nullptr)
+				m_hoverCell->hoverColor();
 		}
 };
 

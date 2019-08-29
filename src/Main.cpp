@@ -11,6 +11,8 @@ const float g_cellsize {32};
 const sf::Vector2u g_winsize {g_cellcount.x * g_cellsize, g_cellcount.y * g_cellsize};
 const int g_boardcount {10};
 
+sf::Vector2i ftoi(sf::Vector2f pos) { return sf::Vector2i{pos.x / g_cellsize, pos.y / g_cellsize}; }
+
 
 namespace Game
 {
@@ -44,17 +46,20 @@ class Simulation : public sf::Drawable
 			m_attackGrid{2, 2, g_boardcount, g_boardcount},
 			m_defenseGrid{2, 14, g_boardcount, g_boardcount},
 			m_placeGrid{14, 14, 5, 5},
-			m_turn{Turn::NONE}, m_mode{Mode::NONE}
+			m_turn{Turn::NONE}, m_mode{Mode::PLACE}
 		{
 		}
 
 
 		void hover(sf::Vector2f mouse)
 		{
+			if(m_mode == Mode::ATTACK)
+				m_attackGrid.hover(mouse);
 		}
 
 		void press(sf::Vector2f mouse)
 		{
+
 		}
 };
 
@@ -68,7 +73,7 @@ int main()
 	window.setFramerateLimit(60);
 
 
-	Game::Simulation test;
+	Game::Simulation sim;
 
 
 	while(window.isOpen())
@@ -86,15 +91,15 @@ int main()
 			{
 				if(event.mouseButton.button == sf::Mouse::Left)
 				{
-					test.press(mouse);
+					sim.press(mouse);
 				}
 			}
 		}
 
-		test.hover(mouse);
+		sim.hover(mouse);
 
 		window.clear();
-		window.draw(test);
+		window.draw(sim);
 		window.display();
 	}
 

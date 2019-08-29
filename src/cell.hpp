@@ -38,6 +38,10 @@ class Cell : public sf::Drawable
 			m_shape.setOutlineColor(sf::Color::White);
 			m_shape.setOutlineThickness(1.0f);
 		}
+		Cell() :
+			Cell{sf::Vector2i{0, 0}}
+		{
+		}
 
 
 
