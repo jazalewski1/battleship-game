@@ -3,13 +3,13 @@
 #include "grid.hpp"
 #include "sfline.hpp"
 #include "sfutils.hpp"
+#include <iostream>
 
 
-const sf::Vector2u g_winsize {800, 900};
-const float g_boardsize {380.0f};
-const int g_cellcount {10};
-const float g_cellsize {g_boardsize / static_cast<float>(g_cellcount)};
-
+const sf::Vector2i g_cellcount {22, 26};
+const float g_cellsize {32};
+const sf::Vector2u g_winsize {g_cellcount.x * g_cellsize, g_cellcount.y * g_cellsize};
+const int g_boardcount {10};
 
 
 namespace Game
@@ -25,8 +25,10 @@ class Simulation : public sf::Drawable
 		Game::Grid m_attackGrid;
 		Game::Grid m_defenseGrid;
 		Game::Grid m_placeGrid;
+
 		Turn m_turn;
 		Mode m_mode;
+
 
 	private:
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -36,12 +38,22 @@ class Simulation : public sf::Drawable
 			target.draw(m_placeGrid, states);
 		}
 
+
 	public:
 		Simulation() :
-			m_attackGrid{sf::Vector2i{g_cellcount, g_cellcount}, sf::Vector2f{40.0f, 40.0f}},
-			m_defenseGrid{sf::Vector2i{g_cellcount, g_cellcount}, sf::Vector2f{40.0f, 480.0f}},
-			m_placeGrid{sf::Vector2i{5, 5}, sf::Vector2f{480.0f, 480.0f}},
-			m_turn{Turn::NONE}, m_mode{Mode::PLACE}
+			m_attackGrid{2, 2, g_boardcount, g_boardcount},
+			m_defenseGrid{2, 14, g_boardcount, g_boardcount},
+			m_placeGrid{14, 14, 5, 5},
+			m_turn{Turn::NONE}, m_mode{Mode::NONE}
+		{
+		}
+
+
+		void hover(sf::Vector2f mouse)
+		{
+		}
+
+		void press(sf::Vector2f mouse)
 		{
 		}
 };
@@ -61,12 +73,25 @@ int main()
 
 	while(window.isOpen())
 	{
+		sf::Vector2f mouse {sf::Mouse::getPosition(window).x * 1.0f, sf::Mouse::getPosition(window).y * 1.0f};
+
+
 		sf::Event event;
 		while(window.pollEvent(event))
 		{
 			if(event.type == sf::Event::Closed)
 				window.close();
+
+			if(event.type == sf::Event::MouseButtonPressed)
+			{
+				if(event.mouseButton.button == sf::Mouse::Left)
+				{
+					test.press(mouse);
+				}
+			}
 		}
+
+		test.hover(mouse);
 
 		window.clear();
 		window.draw(test);
