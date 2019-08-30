@@ -24,9 +24,9 @@ class Simulation : public sf::Drawable
 		enum class Mode {PLACE, ATTACK, WAIT, NONE};
 
 	private:
-		Game::Grid m_attackGrid;
-		Game::Grid m_defenseGrid;
-		Game::Grid m_placeGrid;
+		Game::BoardGrid m_attackGrid;
+		Game::BoardGrid m_defenseGrid;
+		Game::BoardGrid m_placeGrid;
 
 		Turn m_turn;
 		Mode m_mode;
