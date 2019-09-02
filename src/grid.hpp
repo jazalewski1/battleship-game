@@ -87,7 +87,17 @@ class BoardGrid : public Grid
 
 class ShipGrid : public Grid
 {
-
+	public:
+		ShipGrid(sf::Vector2i offset, int length) :
+			Grid{offset, sf::Vector2i{length, 1}}
+		{
+			for(int x = 0; x < length; ++x)
+				addCell<ShipCell>(offset.x + x, offset.y);
+		}
+		ShipGrid(int offsetX, int offsetY, int length) :
+			ShipGrid{sf::Vector2i{offsetX, offsetY}, length}
+		{
+		}
 };
 
 }

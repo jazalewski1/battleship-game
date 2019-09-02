@@ -107,8 +107,9 @@ class ShipCell : public Cell
 		ShipCell(sf::Vector2i index) :
 			Cell{index}
 		{
+			setFillColor(sf::Color{120, 120, 120});
 		}
-		ShipCell(float indexX, float indexY) :
+		ShipCell(int indexX, int indexY) :
 			ShipCell{sf::Vector2i{indexX, indexY}}
 		{
 		}
