@@ -29,10 +29,14 @@ class Player : public sf::Drawable
 		{
 		}
 
-		bool isShip(sf::Vector2i index)
+		bool isShip(sf::Vector2i index) const
 		{
-			index = index;
-			return true;
+			for(const auto& ship : m_ships)
+			{
+				if(ship.contains(index))
+					return true;
+			}
+			return false;
 		}
 };
 

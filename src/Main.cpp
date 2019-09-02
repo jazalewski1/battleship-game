@@ -47,6 +47,33 @@ class Simulation : public sf::Drawable
 			target.draw(m_human);
 		}
 
+		bool placeable(sf::IntRect test)
+		{
+			for(int y = 0; y < test.height; ++y)
+			{
+				for(int x = 0; x < test.width; ++x)
+				{
+					sf::Vector2i index {test.left + x, test.top + y};
+					if(!m_defenseGrid.contains(index))
+						return false;
+				}
+			}
+			for(int y = 0; y < test.height + 2; ++y)
+			{
+				for(int x = 0; x < test.width + 2; ++x)
+				{
+					sf::Vector2i index {test.left - 1 + x, test.top - 1 + y};
+					if(m_activeShip->contains(index))
+						continue;
+
+					if(m_human.isShip(index))
+						return false;
+				}
+			}
+
+			return true;
+		}
+
 
 	public:
 		Simulation() :
@@ -79,8 +106,11 @@ class Simulation : public sf::Drawable
 			{
 				if(m_activeShip)
 				{
-					m_activeShip->adjust(mouse);
-					m_activeShip = nullptr;
+					if(placeable(m_activeShip->getGhostBounds()))
+					{
+						m_activeShip->adjust(mouse);
+						m_activeShip = nullptr;
+					}
 				}
 				else
 				{
@@ -105,7 +135,8 @@ int main()
 
 	while(window.isOpen())
 	{
-		sf::Vector2f mouse {sf::Mouse::getPosition(window).x * 1.0f, sf::Mouse::getPosition(window).y * 1.0f};
+		sf::Vector2i mousei {sf::Mouse::getPosition(window)};
+		sf::Vector2f mouse {mousei.x * 1.0f, mousei.y * 1.0f};
 
 
 		sf::Event event;

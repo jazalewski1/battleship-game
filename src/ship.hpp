@@ -30,8 +30,7 @@ class Ship : public sf::Drawable
 			m_offset{offset}, m_size{length, 1}, m_bounds{offset.x, offset.y, length, 1},
 			m_pos{itof(offset)}
 		{
-			m_center.x = m_pos.x + (m_shape.getSize().x * 0.5f);
-			m_center.y = m_pos.y + (m_shape.getSize().y * 0.5f);
+			m_center = m_pos + (m_shape.getSize() * 0.5f);
 
 			m_shape.setPosition(m_pos);
 			m_shape.setFillColor(sf::Color{160, 160, 160});
@@ -54,7 +53,20 @@ class Ship : public sf::Drawable
 		}
 		void adjust(float posX, float posY) { adjust(sf::Vector2f{posX, posY}); }
 
-		bool contains(sf::Vector2i index) { return m_bounds.contains(index); }
+		bool contains(sf::Vector2i index) const { return m_bounds.contains(index); }
+
+		void rotate()
+		{
+			// change m_size AND m_shape's size
+		}
+
+		sf::IntRect getBounds() const { return m_bounds; }
+		sf::IntRect getGhostBounds() const
+		{
+			sf::Vector2f pos {m_center - (m_shape.getSize() * 0.5f)};
+			sf::Vector2i offset {ftoi(sf::Vector2f{pos.x + (g_cellsize * 0.5f), m_center.y})};
+			return sf::IntRect{offset, m_size};
+		}
 
 
 		void setCenter(sf::Vector2f center)
