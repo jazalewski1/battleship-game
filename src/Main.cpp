@@ -35,7 +35,7 @@ class Simulation : public sf::Drawable
 		Mode m_mode;
 
 		HumanPlayer m_human;
-		ShipGrid* m_activeShip;
+		Ship* m_activeShip;
 
 
 	private:
@@ -65,7 +65,7 @@ class Simulation : public sf::Drawable
 			if(m_mode == Mode::PLACE)
 			{
 				if(m_activeShip)
-					m_activeShip->setPosition(mouse);
+					m_activeShip->setCenter(mouse);
 			}
 			if(m_mode == Mode::ATTACK)
 			{

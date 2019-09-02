@@ -5,6 +5,7 @@
 #include "common.hpp"
 #include "grid.hpp"
 #include "marker.hpp"
+#include "ship.hpp"
 #include <vector>
 
 namespace Game
@@ -13,7 +14,7 @@ namespace Game
 class Player : public sf::Drawable
 {
 	protected:
-		std::vector<ShipGrid> m_ships;
+		std::vector<Ship> m_ships;
 		std::unordered_map<sf::Vector2i, Marker> m_markers;
 		const BoardGrid* m_attackGrid;
 		const BoardGrid* m_defenseGrid;
@@ -53,11 +54,11 @@ class HumanPlayer : public Player
 		void fillShips() override
 		{
 			sf::Vector2i start {m_placeGrid->getBounds().left, m_placeGrid->getBounds().top};
-			m_ships.push_back(ShipGrid{start.x, start.y + 0, 5});
-			m_ships.push_back(ShipGrid{start.x, start.y + 1, 4});
-			m_ships.push_back(ShipGrid{start.x, start.y + 2, 3});
-			m_ships.push_back(ShipGrid{start.x, start.y + 3, 3});
-			m_ships.push_back(ShipGrid{start.x, start.y + 4, 2});
+			m_ships.push_back(Ship{start.x, start.y + 0, 5});
+			m_ships.push_back(Ship{start.x, start.y + 1, 4});
+			m_ships.push_back(Ship{start.x, start.y + 2, 3});
+			m_ships.push_back(Ship{start.x, start.y + 3, 3});
+			m_ships.push_back(Ship{start.x, start.y + 4, 2});
 		}
 
 	public:
@@ -67,7 +68,7 @@ class HumanPlayer : public Player
 			fillShips();
 		}
 
-		ShipGrid* getShip(sf::Vector2i index)
+		Ship* getShip(sf::Vector2i index)
 		{
 			for(auto& ship : m_ships)
 			{
