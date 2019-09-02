@@ -44,12 +44,16 @@ class Cell : public sf::Drawable
 		}
 
 
+		virtual bool contains(sf::Vector2f test) { return m_shape.getLocalBounds().contains(test); }
+		virtual bool contains(float posX, float posY) { return contains(sf::Vector2f{posX, posY}); }
+
 		virtual void setPosition(sf::Vector2f pos)
 		{
 			m_pos = pos;
 			m_center.x = m_pos.x + g_cellsize / 2.0f;
 			m_center.y = m_pos.y + g_cellsize / 2.0f;
 			m_shape.setPosition(m_pos);
+			m_index = ftoi(m_pos);
 		}
 		virtual void setIndex(sf::Vector2i index)
 		{
@@ -60,17 +64,17 @@ class Cell : public sf::Drawable
 		virtual void setCenter(sf::Vector2f pos)
 		{
 			m_center = pos;
-			m_pos.x = m_center.x - g_cellsize / 2.0f;
-			m_pos.y = m_center.y - g_cellsize / 2.0f;
+			sf::Vector2f newPos {m_center.x - g_cellsize / 2.0f, m_center.y - g_cellsize / 2.0f};
+			setPosition(newPos);
 		}
-
 		virtual void setFillColor(sf::Color color) { m_shape.setFillColor(color); }
 
 		virtual sf::Vector2i getIndex() const { return m_index; }
 		virtual sf::Vector2f getPosition() const { return m_pos; }
 		virtual sf::Vector2f getCenter() const { return m_center; }
 
-		bool contains(sf::Vector2f test) { return m_shape.getLocalBounds().contains(test); }
+		virtual bool operator==(sf::Vector2i index) { return m_index == index; }
+		virtual bool operator!=(sf::Vector2i index) { return m_index != index; }
 };
 
 
