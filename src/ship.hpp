@@ -7,15 +7,15 @@
 class Ship : public sf::Drawable
 {
 	private:
-		enum class Rot {HOR, VER};
+		enum Rotation {HOR, VER};
 
 	private:
 		sf::RectangleShape m_shape;
 		sf::Vector2i m_offset;
 		sf::Vector2i m_size;
 		sf::IntRect m_bounds;
-		sf::Vector2f m_pos;
 		sf::Vector2f m_center;
+		Rotation m_rotation;
 
 	private:
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -28,11 +28,11 @@ class Ship : public sf::Drawable
 		Ship(sf::Vector2i offset, int length) :
 			m_shape{sf::Vector2f{length * g_cellsize, g_cellsize}},
 			m_offset{offset}, m_size{length, 1}, m_bounds{offset.x, offset.y, length, 1},
-			m_pos{itof(offset)}
+			m_center{itof(offset) + (m_shape.getSize() * 0.5f)}, m_rotation{HOR}
 		{
-			m_center = m_pos + (m_shape.getSize() * 0.5f);
+			m_shape.setOrigin(m_shape.getSize() * 0.5f);
 
-			m_shape.setPosition(m_pos);
+			m_shape.setPosition(m_center);
 			m_shape.setFillColor(sf::Color{160, 160, 160});
 			m_shape.setOutlineColor(sf::Color{100, 100, 100});
 			m_shape.setOutlineThickness(3.0f);
@@ -45,10 +45,10 @@ class Ship : public sf::Drawable
 
 		void adjust(sf::Vector2f center)
 		{
-			setCenter(center);
-			m_offset = ftoi(sf::Vector2f{m_pos.x + (g_cellsize * 0.5f), m_center.y});
-			m_pos = itof(m_offset);
-			m_shape.setPosition(m_pos);
+			sf::Vector2f diff {(m_shape.getSize().x * 0.5f) - (g_cellsize * 0.5f), (m_shape.getSize().y * 0.5f) - (g_cellsize * 0.5f)};
+			m_offset = ftoi(center - diff);
+			m_center = itof(m_offset) + (m_shape.getSize() * 0.5f);
+			m_shape.setPosition(m_center);
 			m_bounds = sf::IntRect{m_offset, m_size};
 		}
 		void adjust(float posX, float posY) { adjust(sf::Vector2f{posX, posY}); }
@@ -57,14 +57,30 @@ class Ship : public sf::Drawable
 
 		void rotate()
 		{
-			// change m_size AND m_shape's size
+			if(m_rotation == HOR)
+			{
+				m_rotation = VER;
+
+				m_size.y = m_size.x;
+				m_size.x = 1;
+			}
+			else
+			{
+				m_rotation = HOR;
+
+				m_size.x = m_size.y;
+				m_size.y = 1;
+			}
+			m_shape.setOrigin(m_shape.getSize() * -0.5f);
+			m_shape.setSize(sf::Vector2f{m_size.x * g_cellsize, m_size.y * g_cellsize});
+			m_shape.setOrigin(m_shape.getSize() * 0.5f);
 		}
 
 		sf::IntRect getBounds() const { return m_bounds; }
 		sf::IntRect getGhostBounds() const
 		{
-			sf::Vector2f pos {m_center - (m_shape.getSize() * 0.5f)};
-			sf::Vector2i offset {ftoi(sf::Vector2f{pos.x + (g_cellsize * 0.5f), m_center.y})};
+			sf::Vector2f diff {(m_shape.getSize().x * 0.5f) - (g_cellsize * 0.5f), (m_shape.getSize().y * 0.5f) - (g_cellsize * 0.5f)};
+			sf::Vector2i offset {ftoi(m_center - diff)};
 			return sf::IntRect{offset, m_size};
 		}
 
@@ -72,9 +88,7 @@ class Ship : public sf::Drawable
 		void setCenter(sf::Vector2f center)
 		{
 			m_center = center;
-			m_pos.x = m_center.x - (m_shape.getSize().x * 0.5f);
-			m_pos.y = m_center.y - (m_shape.getSize().y * 0.5f);
-			m_shape.setPosition(m_pos);
+			m_shape.setPosition(m_center);
 		}
 		void setCenter(float posX, float posY) { setCenter(sf::Vector2f{posX, posY}); }
 

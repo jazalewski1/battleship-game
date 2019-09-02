@@ -119,6 +119,14 @@ class Simulation : public sf::Drawable
 				}
 			}
 		}
+
+		void spacebar()
+		{
+			if(m_activeShip)
+			{
+				m_activeShip->rotate();
+			}
+		}
 };
 
 }
@@ -150,6 +158,14 @@ int main()
 				if(event.mouseButton.button == sf::Mouse::Left)
 				{
 					sim.press(mouse);
+				}
+			}
+
+			if(event.type == sf::Event::KeyPressed)
+			{
+				if(event.key.code == sf::Keyboard::Space)
+				{
+					sim.spacebar();
 				}
 			}
 		}
