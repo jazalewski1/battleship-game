@@ -27,7 +27,8 @@ class Grid : public sf::Drawable
 				target.draw(*elem.second, states);
 		}
 
-		bool contains(sf::Vector2i index) { return m_cells.find(index) != m_cells.end(); }
+		virtual bool contains(sf::Vector2i index) { return m_cells.find(index) != m_cells.end(); }
+		virtual bool contains(sf::Vector2f pos) { return contains(ftoi(pos)); }
 
 		template <typename CellType>
 		void addCell(sf::Vector2i index) { m_cells.insert(std::make_pair(index, std::make_unique<CellType>(index))); }
