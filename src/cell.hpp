@@ -95,6 +95,22 @@ class BoardCell : public Cell
 		void hoverColor() { m_shape.setFillColor(m_hoverColor); }
 };
 
+
+
+class ShipCell : public Cell
+{
+	public:
+		ShipCell(sf::Vector2i index) :
+			Cell{index}
+		{
+		}
+		ShipCell(float indexX, float indexY) :
+			ShipCell{sf::Vector2i{indexX, indexY}}
+		{
+		}
+};
+
+
 }
 
 #endif
