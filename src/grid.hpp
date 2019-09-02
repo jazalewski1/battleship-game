@@ -92,14 +92,11 @@ class BoardGrid : public Grid
 class ShipGrid : public Grid
 {
 	private:
-		sf::Vector2i m_head;
-
-	private:
 		void changeKey(sf::Vector2i old, sf::Vector2i update)
 		{
 			if(m_cells.find(old) != m_cells.end())
 			{
-				auto node{m_cells.extract(old)};
+				auto node {m_cells.extract(old)};
 				node.key() = update;
 				m_cells.insert(std::move(node));
 			}
@@ -107,7 +104,7 @@ class ShipGrid : public Grid
 
 	public:
 		ShipGrid(sf::Vector2i offset, int length) :
-			Grid{offset, sf::Vector2i{length, 1}}, m_head{offset}
+			Grid{offset, sf::Vector2i{length, 1}}
 		{
 			for(int x = 0; x < length; ++x)
 				addCell<ShipCell>(offset.x + x, offset.y);
@@ -121,7 +118,7 @@ class ShipGrid : public Grid
 		{
 			for(int x = 0; x < m_size.x; ++x)
 			{
-				sf::Vector2i index {m_head.x + x, m_head.y};
+				sf::Vector2i index {m_offset.x + x, m_offset.y};
 				auto search {m_cells.find(index)};
 				if(search != m_cells.end())
 				{
@@ -133,20 +130,20 @@ class ShipGrid : public Grid
 
 		void adjust(sf::Vector2f pos)
 		{
-			sf::Vector2i newHeadIndex {ftoi(pos)};
+			sf::Vector2i newOffset {ftoi(pos)};
 
 			for(int x = 0; x < m_size.x; ++x)
 			{
-				sf::Vector2i oldIndex {m_head.x + x, m_head.y};
+				sf::Vector2i oldIndex {m_offset.x + x, m_offset.y};
 				auto search {m_cells.find(oldIndex)};
 				if(search != m_cells.end())
 				{
-					sf::Vector2i newIndex {newHeadIndex.x + x, newHeadIndex.y};
+					sf::Vector2i newIndex {newOffset.x + x, newOffset.y};
 					search->second->setIndex(newIndex);
 					changeKey(oldIndex, newIndex);
 				}
 			}
-			m_offset = newHeadIndex;
+			m_offset = newOffset;
 			m_bounds = sf::IntRect{m_offset, m_size};
 		}
 };
