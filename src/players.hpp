@@ -13,8 +13,8 @@ namespace Game
 class Player : public sf::Drawable
 {
 	protected:
-		std::unordered_map<sf::Vector2i, Marker> m_markers;
 		std::vector<ShipGrid> m_ships;
+		std::unordered_map<sf::Vector2i, Marker> m_markers;
 		const BoardGrid* m_attackGrid;
 		const BoardGrid* m_defenseGrid;
 
@@ -67,7 +67,15 @@ class HumanPlayer : public Player
 			fillShips();
 		}
 
-
+		ShipGrid* getShip(sf::Vector2i index)
+		{
+			for(auto& ship : m_ships)
+			{
+				if(ship.contains(index))
+					return &ship;
+			}
+			return nullptr;
+		}
 
 };
 

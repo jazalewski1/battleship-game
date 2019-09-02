@@ -55,18 +55,21 @@ class Cell : public sf::Drawable
 			m_shape.setPosition(m_pos);
 			m_index = ftoi(m_pos);
 		}
+		virtual void setPosition(float posX, float posY) { setPosition(sf::Vector2f{posX, posY}); }
 		virtual void setIndex(sf::Vector2i index)
 		{
 			m_index = index;
 			sf::Vector2f newPos {m_index.x * g_cellsize, m_index.y * g_cellsize};
 			setPosition(newPos);
 		}
+		virtual void setIndex(int indexX, int indexY) { setIndex(sf::Vector2i{indexX, indexY}); }
 		virtual void setCenter(sf::Vector2f pos)
 		{
 			m_center = pos;
 			sf::Vector2f newPos {m_center.x - g_cellsize / 2.0f, m_center.y - g_cellsize / 2.0f};
 			setPosition(newPos);
 		}
+		virtual void setCenter(float posX, float posY) { setCenter(sf::Vector2f{posX, posY}); }
 		virtual void setFillColor(sf::Color color) { m_shape.setFillColor(color); }
 
 		virtual sf::Vector2i getIndex() const { return m_index; }
