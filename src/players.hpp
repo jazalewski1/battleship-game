@@ -4,6 +4,7 @@
 #include "SFML/Graphics.hpp"
 #include "common.hpp"
 #include "grid.hpp"
+#include "marker.hpp"
 #include <vector>
 
 namespace Game
@@ -12,10 +13,7 @@ namespace Game
 class Player : public sf::Drawable
 {
 	protected:
-		// hit markers
-		// miss markers
-		// dont put the draw function here at all
-
+		std::unordered_map<sf::Vector2i, Marker> m_markers;
 		std::vector<ShipGrid> m_ships;
 		const BoardGrid* m_attackGrid;
 		const BoardGrid* m_defenseGrid;
@@ -29,7 +27,7 @@ class Player : public sf::Drawable
 		{
 		}
 
-		bool checkShot(sf::Vector2i index)
+		bool isShip(sf::Vector2i index)
 		{
 		}
 };
@@ -41,11 +39,9 @@ class HumanPlayer : public Player
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const
 		{
 			for(const auto& ship : m_ships)
-				target.draw(ship);
-			// for(const auto& marker : m_hitMarkers)
-			// 	target.draw(marker);
-			// for(const auto& marker : m_missMarkers)
-			// 	target.draw(marker);
+				target.draw(ship, states);
+			for(const auto& marker : m_markers)
+				target.draw(marker.second);
 		}
 
 	public:
