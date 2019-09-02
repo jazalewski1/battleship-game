@@ -16,15 +16,15 @@ class Player : public sf::Drawable
 	protected:
 		std::vector<Ship> m_ships;
 		std::unordered_map<sf::Vector2i, Marker> m_markers;
-		const BoardGrid* m_attackGrid;
-		const BoardGrid* m_defenseGrid;
+		const Grid* m_attackGrid;
+		const Grid* m_defenseGrid;
 
 		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
 		virtual void fillShips() = 0;
 
 
 	public:
-		Player(const BoardGrid* attackGrid, const BoardGrid* defenseGrid) :
+		Player(const Grid* attackGrid, const Grid* defenseGrid) :
 			m_attackGrid{attackGrid}, m_defenseGrid{defenseGrid}
 		{
 		}
@@ -40,7 +40,7 @@ class Player : public sf::Drawable
 class HumanPlayer : public Player
 {
 	private:
-		const BoardGrid* m_placeGrid;
+		const Grid* m_placeGrid;
 
 	private:
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -62,7 +62,7 @@ class HumanPlayer : public Player
 		}
 
 	public:
-		HumanPlayer(const BoardGrid* attackGrid, const BoardGrid* defenseGrid, const BoardGrid* placeGrid) :
+		HumanPlayer(const Grid* attackGrid, const Grid* defenseGrid, const Grid* placeGrid) :
 			Player{attackGrid, defenseGrid}, m_placeGrid{placeGrid}
 		{
 			fillShips();

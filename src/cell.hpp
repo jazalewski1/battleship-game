@@ -16,6 +16,9 @@ class Cell : public sf::Drawable
 		sf::Vector2f m_pos;
 		sf::Vector2f m_center;
 
+		sf::Color m_defaultColor;
+		sf::Color m_hoverColor;
+
 
 	protected:
 		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -27,7 +30,8 @@ class Cell : public sf::Drawable
 	public:
 		Cell(sf::Vector2i index) :
 			m_shape{sf::Vector2f{g_cellsize, g_cellsize}}, m_size{g_cellsize, g_cellsize},
-			m_index{index}, m_pos{index.x * g_cellsize, index.y * g_cellsize}
+			m_index{index}, m_pos{index.x * g_cellsize, index.y * g_cellsize},
+			m_defaultColor{sf::Color::Transparent}, m_hoverColor{sf::Color::Green}
 		{
 			setPosition(m_pos);
 			m_shape.setFillColor(sf::Color::Transparent);
@@ -78,46 +82,10 @@ class Cell : public sf::Drawable
 
 		virtual bool operator==(sf::Vector2i index) { return m_index == index; }
 		virtual bool operator!=(sf::Vector2i index) { return m_index != index; }
-};
-
-
-
-class BoardCell : public Cell
-{
-	private:
-		sf::Color m_defaultColor;
-		sf::Color m_hoverColor;
-
-	public:
-		BoardCell(sf::Vector2i index) :
-			Cell{index}, m_defaultColor{sf::Color::Transparent}, m_hoverColor{sf::Color::Green}
-		{
-		}
-		BoardCell(int indexX, int indexY) :
-			BoardCell{sf::Vector2i{indexX, indexY}}
-		{
-		}
 
 		void defaultColor() { m_shape.setFillColor(m_defaultColor); }
 		void hoverColor() { m_shape.setFillColor(m_hoverColor); }
 };
-
-
-
-class ShipCell : public Cell
-{
-	public:
-		ShipCell(sf::Vector2i index) :
-			Cell{index}
-		{
-			setFillColor(sf::Color{120, 120, 120});
-		}
-		ShipCell(int indexX, int indexY) :
-			ShipCell{sf::Vector2i{indexX, indexY}}
-		{
-		}
-};
-
 
 }
 
