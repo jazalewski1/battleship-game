@@ -19,6 +19,7 @@ class Grid : public sf::Drawable
 		std::unordered_map<sf::Vector2i, std::unique_ptr<Cell> > m_cells;
 		sf::Vector2i m_offset;
 		sf::Vector2i m_size;
+		sf::IntRect m_bounds;
 
 	protected:
 		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -27,7 +28,7 @@ class Grid : public sf::Drawable
 				target.draw(*elem.second, states);
 		}
 
-		virtual bool contains(sf::Vector2i index) { return m_cells.find(index) != m_cells.end(); }
+		virtual bool contains(sf::Vector2i index) { return m_bounds.contains(index); }
 		virtual bool contains(sf::Vector2f pos) { return contains(ftoi(pos)); }
 
 		template <typename CellType>
@@ -37,9 +38,11 @@ class Grid : public sf::Drawable
 
 	public:
 		Grid(sf::Vector2i offset, sf::Vector2i size) :
-			m_offset{offset}, m_size{size}
+			m_offset{offset}, m_size{size}, m_bounds{offset, size}
 		{
 		}
+
+		sf::IntRect getBounds() const { return m_bounds; }
 };
 
 
