@@ -8,10 +8,11 @@
 
 const sf::Vector2i g_cellcount {22, 26};
 const float g_cellsize {32};
-const sf::Vector2u g_winsize {g_cellcount.x * g_cellsize, g_cellcount.y * g_cellsize};
+const sf::Vector2u g_winsize {static_cast<unsigned int>(g_cellcount.x * g_cellsize), static_cast<unsigned int>(g_cellcount.y * g_cellsize)};
 const int g_boardcount {10};
 
-sf::Vector2i ftoi(sf::Vector2f pos) { return sf::Vector2i{pos.x / g_cellsize, pos.y / g_cellsize}; }
+
+sf::Vector2i ftoi(sf::Vector2f pos) { return sf::Vector2i{static_cast<int>(pos.x / g_cellsize), static_cast<int>(pos.y / g_cellsize)}; }
 
 
 namespace Game
