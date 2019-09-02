@@ -90,6 +90,10 @@ class BoardCell : public Cell
 			Cell{index}, m_defaultColor{sf::Color::Transparent}, m_hoverColor{sf::Color::Green}
 		{
 		}
+		BoardCell(int indexX, int indexY) :
+			BoardCell{sf::Vector2i{indexX, indexY}}
+		{
+		}
 
 		void defaultColor() { m_shape.setFillColor(m_defaultColor); }
 		void hoverColor() { m_shape.setFillColor(m_hoverColor); }
