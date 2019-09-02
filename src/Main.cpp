@@ -34,6 +34,8 @@ class Simulation : public sf::Drawable
 		Turn m_turn;
 		Mode m_mode;
 
+		HumanPlayer m_human;
+
 
 	private:
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -41,6 +43,7 @@ class Simulation : public sf::Drawable
 			target.draw(m_attackGrid, states);
 			target.draw(m_defenseGrid, states);
 			target.draw(m_placeGrid, states);
+			target.draw(m_human);
 		}
 
 
@@ -49,7 +52,8 @@ class Simulation : public sf::Drawable
 			m_attackGrid{2, 2, g_boardcount, g_boardcount},
 			m_defenseGrid{2, 14, g_boardcount, g_boardcount},
 			m_placeGrid{14, 14, 5, 5},
-			m_turn{Turn::NONE}, m_mode{Mode::PLACE}
+			m_turn{Turn::NONE}, m_mode{Mode::PLACE},
+			m_human{&m_attackGrid, &m_defenseGrid, &m_placeGrid}
 		{
 		}
 

@@ -50,9 +50,9 @@ class HumanPlayer : public Player
 				target.draw(marker.second);
 		}
 
-		void fillShips()
+		void fillShips() override
 		{
-			sf::Vector2i start {dynamic_cast<const BoardGrid*>(m_placeGrid)->getBounds()};
+			sf::Vector2i start {m_placeGrid->getBounds().left, m_placeGrid->getBounds().top};
 			m_ships.push_back(ShipGrid{start.x, start.y + 0, 5});
 			m_ships.push_back(ShipGrid{start.x, start.y + 1, 4});
 			m_ships.push_back(ShipGrid{start.x, start.y + 2, 3});
@@ -64,6 +64,7 @@ class HumanPlayer : public Player
 		HumanPlayer(const BoardGrid* attackGrid, const BoardGrid* defenseGrid, const BoardGrid* placeGrid) :
 			Player{attackGrid, defenseGrid}, m_placeGrid{placeGrid}
 		{
+			fillShips();
 		}
 
 
