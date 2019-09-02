@@ -1,6 +1,7 @@
 #include "SFML/Graphics.hpp"
 #include "common.hpp"
 #include "grid.hpp"
+#include "players.hpp"
 #include "sfline.hpp"
 #include "sfutils.hpp"
 #include <iostream>
