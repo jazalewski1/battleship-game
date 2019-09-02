@@ -28,8 +28,6 @@ class Grid : public sf::Drawable
 				target.draw(*elem.second, states);
 		}
 
-		virtual bool contains(sf::Vector2i index) { return m_bounds.contains(index); }
-		virtual bool contains(sf::Vector2f pos) { return contains(ftoi(pos)); }
 
 		template <typename CellType>
 		void addCell(sf::Vector2i index) { m_cells.insert(std::make_pair(index, std::make_unique<CellType>(index))); }
@@ -41,6 +39,9 @@ class Grid : public sf::Drawable
 			m_offset{offset}, m_size{size}, m_bounds{offset, size}
 		{
 		}
+
+		virtual bool contains(sf::Vector2i index) const { return m_bounds.contains(index); }
+		virtual bool contains(sf::Vector2f pos) const { return contains(ftoi(pos)); }
 
 		sf::IntRect getBounds() const { return m_bounds; }
 };
@@ -90,6 +91,17 @@ class BoardGrid : public Grid
 
 class ShipGrid : public Grid
 {
+	private:
+		void changeKey(sf::Vector2i old, sf::Vector2i update)
+		{
+			if(m_cells.find(old) != m_cells.end())
+			{
+				auto node {m_cells.extract(old)};
+				node.key() = update;
+				m_cells.insert(std::move(node));
+			}
+		}
+
 	public:
 		ShipGrid(sf::Vector2i offset, int length) :
 			Grid{offset, sf::Vector2i{length, 1}}
@@ -100,6 +112,39 @@ class ShipGrid : public Grid
 		ShipGrid(int offsetX, int offsetY, int length) :
 			ShipGrid{sf::Vector2i{offsetX, offsetY}, length}
 		{
+		}
+
+		void setPosition(sf::Vector2f pos)
+		{
+			for(int x = 0; x < m_size.x; ++x)
+			{
+				sf::Vector2i index {m_offset.x + x, m_offset.y};
+				auto search {m_cells.find(index)};
+				if(search != m_cells.end())
+				{
+					sf::Vector2f center {pos.x + (x * g_cellsize), pos.y};
+					search->second->setCenter(center);
+				}
+			}
+		}
+
+		void adjust(sf::Vector2f pos)
+		{
+			sf::Vector2i newOffset {ftoi(pos)};
+
+			for(int x = 0; x < m_size.x; ++x)
+			{
+				sf::Vector2i oldIndex {m_offset.x + x, m_offset.y};
+				auto search {m_cells.find(oldIndex)};
+				if(search != m_cells.end())
+				{
+					sf::Vector2i newIndex {newOffset.x + x, newOffset.y};
+					search->second->setIndex(newIndex);
+					changeKey(oldIndex, newIndex);
+				}
+			}
+			m_offset = newOffset;
+			m_bounds = sf::IntRect{m_offset, m_size};
 		}
 };
 

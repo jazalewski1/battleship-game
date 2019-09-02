@@ -35,6 +35,7 @@ class Simulation : public sf::Drawable
 		Mode m_mode;
 
 		HumanPlayer m_human;
+		ShipGrid* m_activeShip;
 
 
 	private:
@@ -53,20 +54,40 @@ class Simulation : public sf::Drawable
 			m_defenseGrid{2, 14, g_boardcount, g_boardcount},
 			m_placeGrid{14, 14, 5, 5},
 			m_turn{Turn::NONE}, m_mode{Mode::PLACE},
-			m_human{&m_attackGrid, &m_defenseGrid, &m_placeGrid}
+			m_human{&m_attackGrid, &m_defenseGrid, &m_placeGrid},
+			m_activeShip{nullptr}
 		{
 		}
 
 
 		void hover(sf::Vector2f mouse)
 		{
+			if(m_mode == Mode::PLACE)
+			{
+				if(m_activeShip)
+					m_activeShip->setPosition(mouse);
+			}
 			if(m_mode == Mode::ATTACK)
+			{
 				m_attackGrid.hover(mouse);
+			}
 		}
 
 		void press(sf::Vector2f mouse)
 		{
-
+			if(m_mode == Mode::PLACE)
+			{
+				if(m_activeShip)
+				{
+					m_activeShip->adjust(mouse);
+					m_activeShip = nullptr;
+				}
+				else
+				{
+					sf::Vector2i index {ftoi(mouse)};
+					m_activeShip = m_human.getShip(index);
+				}
+			}
 		}
 };
 
@@ -81,7 +102,6 @@ int main()
 
 
 	Game::Simulation sim;
-
 
 	while(window.isOpen())
 	{
