@@ -47,12 +47,12 @@ class HumanPlayer : public Player
 		const Grid* m_placeGrid;
 
 	private:
-		void draw(sf::RenderTarget& target, sf::RenderStates states) const
+		void draw(sf::RenderTarget& target, sf::RenderStates states) const override
 		{
 			for(const auto& ship : m_ships)
 				target.draw(ship, states);
 			for(const auto& marker : m_markers)
-				target.draw(marker.second);
+				target.draw(marker.second, states);
 		}
 
 		void fillShips() override
@@ -83,6 +83,30 @@ class HumanPlayer : public Player
 		}
 
 };
+
+
+class ComputerPlayer : public Player
+{
+	private:
+		void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+		{
+			for(const auto& marker : m_markers)
+				target.draw(marker.second, states);
+		}
+
+		void fillShips() override
+		{
+
+		}
+
+	public:
+		ComputerPlayer(const Grid* attackGrid, const Grid* defenseGrid) :
+			Player{attackGrid, defenseGrid}
+		{
+		}
+};
+
+
 
 }
 
