@@ -29,8 +29,8 @@ namespace Game
 class Simulation : public sf::Drawable
 {
 	private:
-		enum class Turn {HUMAN, COMPUTER, NONE};
-		enum class Mode {PLACE, ATTACK, WAIT, NONE};
+		enum class Turn {HUMAN, OPPONENT, NONE};
+		enum class Mode {PLACE, ATTACK, NONE};
 
 	private:
 		Grid m_attackGrid;
@@ -43,7 +43,9 @@ class Simulation : public sf::Drawable
 		HumanPlayer m_human;
 		ComputerPlayer m_opponent;
 
-		Ship* m_activeShip;
+		Ship* m_selectShip;
+		Cell* m_hoverCell;
+		Cell* m_selectCell;
 
 		Button m_confirmButton;
 
@@ -70,7 +72,8 @@ class Simulation : public sf::Drawable
 			m_turn{Turn::NONE}, m_mode{Mode::PLACE},
 			m_human{&m_attackGrid, &m_defenseGrid, &m_placeGrid},
 			m_opponent{&m_defenseGrid, &m_attackGrid, &m_placeGrid},
-			m_activeShip{nullptr},
+			m_selectShip{nullptr},
+			m_hoverCell{nullptr}, m_selectCell{nullptr},
 			m_confirmButton{14, 6, 6, 3}
 		{
 		}
@@ -78,20 +81,24 @@ class Simulation : public sf::Drawable
 
 		void update()
 		{
-			m_confirmButton.setActive(m_human.isReady() && !m_activeShip);
-		}
-
-
-		void hover(sf::Vector2f mouse)
-		{
 			if(m_mode == Mode::PLACE)
 			{
-				if(m_activeShip)
-					m_activeShip->setCenter(mouse);
+				m_confirmButton.setActive(m_human.isReady() && !m_selectShip);
 			}
+
 			if(m_mode == Mode::ATTACK)
 			{
-				m_attackGrid.hover(mouse);
+				if(m_turn == Turn::HUMAN)
+				{
+					m_confirmButton.setActive(m_selectCell != nullptr);
+				}
+				if(m_turn == Turn::OPPONENT)
+				{
+					m_confirmButton.setActive(false);
+					// here may be the function to think, delaying the shot
+					sf::Vector2i shot {m_opponent.makeShot()};
+					m_turn = Turn::HUMAN;
+				}
 			}
 		}
 
@@ -99,31 +106,86 @@ class Simulation : public sf::Drawable
 		{
 			if(m_mode == Mode::PLACE)
 			{
-				if(m_activeShip)
+				if(m_selectShip)
 				{
-					if(m_human.placeable(m_activeShip))
+					if(m_human.placeable(m_selectShip))
 					{
-						m_activeShip->adjust(mouse);
-						m_activeShip = nullptr;
+						m_selectShip->adjust(mouse);
+						m_selectShip = nullptr;
 					}
 				}
 				else
 				{
-					m_activeShip = m_human.getShip(ftoi(mouse));
+					m_selectShip = m_human.getShip(ftoi(mouse));
 				}
 
 				if(m_confirmButton.pressed(mouse))
 				{
 					m_mode = Mode::ATTACK;
+					m_turn = Turn::HUMAN;
+					return;
+				}
+			}
+
+			if(m_mode == Mode::ATTACK)
+			{
+				if(m_selectCell)
+					m_selectCell->defaultColor();
+				if(m_attackGrid.contains(mouse))
+				{
+					m_selectCell = m_attackGrid.getCell(mouse);
+					if(m_selectCell)
+						m_selectCell->selectColor();
+				}
+				else
+				{
+					if(m_selectCell)
+						m_selectCell->defaultColor();
+					m_selectCell = nullptr;
+				}
+
+				if(m_confirmButton.pressed(mouse))
+				{
+					m_turn = Turn::OPPONENT;
+				}
+			}
+		}
+
+		void hover(sf::Vector2f mouse)
+		{
+			if(m_mode == Mode::PLACE)
+			{
+				if(m_selectShip)
+				{
+					m_selectShip->setCenter(mouse);
+				}
+			}
+
+			if(m_mode == Mode::ATTACK)
+			{
+				if(m_attackGrid.contains(mouse))
+				{
+					if(m_hoverCell && m_hoverCell != m_selectCell)
+						m_hoverCell->defaultColor();
+
+					m_hoverCell = m_attackGrid.getCell(mouse);
+					if(m_hoverCell && m_hoverCell != m_selectCell)
+						m_hoverCell->hoverColor();
+				}
+				else
+				{
+					if(m_hoverCell && m_hoverCell != m_selectCell)
+						m_hoverCell->defaultColor();
+					m_hoverCell = nullptr;
 				}
 			}
 		}
 
 		void spacebar()
 		{
-			if(m_activeShip)
+			if(m_selectShip)
 			{
-				m_activeShip->rotate();
+				m_selectShip->rotate();
 			}
 		}
 };

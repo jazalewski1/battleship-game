@@ -167,6 +167,11 @@ class ComputerPlayer : public Player
 		{
 			fillShips();
 		}
+
+		sf::Vector2i makeShot()
+		{
+			// brain, deciding where the shot should be, based on markers, probable indexes etc.
+		}
 };
 
 

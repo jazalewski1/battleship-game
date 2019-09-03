@@ -6,7 +6,7 @@
 #include "common.hpp"
 #include "cell.hpp"
 #include "sfutils.hpp"
-#include <memory>
+#include <iostream>
 #include <unordered_map>
 
 
@@ -21,9 +21,6 @@ class Grid : public sf::Drawable
 		sf::Vector2i m_size;
 		sf::IntRect m_bounds;
 
-		Cell* m_hoverCell;
-
-
 	protected:
 		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
 		{
@@ -34,8 +31,7 @@ class Grid : public sf::Drawable
 
 	public:
 		Grid(sf::Vector2i offset, sf::Vector2i size) :
-			m_offset{offset}, m_size{size}, m_bounds{offset, size},
-			m_hoverCell{nullptr}
+			m_offset{offset}, m_size{size}, m_bounds{offset, size}
 		{
 			for(int y = 0; y < m_size.y; ++y)
 			{
@@ -54,24 +50,15 @@ class Grid : public sf::Drawable
 		virtual bool contains(sf::Vector2i index) const { return m_bounds.contains(index); }
 		virtual bool contains(sf::Vector2f pos) const { return contains(ftoi(pos)); }
 
-		void hover(sf::Vector2f mouse)
-		{
-			sf::Vector2i index {ftoi(mouse)};
-			auto search {m_cells.find(index)};
-
-			if(m_hoverCell != nullptr)
-				m_hoverCell->defaultColor();
-
-			if(search != m_cells.end())
-				m_hoverCell = &(search->second);
-			else
-				m_hoverCell = nullptr;
-
-			if(m_hoverCell != nullptr)
-				m_hoverCell->hoverColor();
-		}
-
 		sf::IntRect getBounds() const { return m_bounds; }
+		Cell* getCell(sf::Vector2i index)
+		{
+			auto search {m_cells.find(index)};
+			if(search != m_cells.end())
+				return &search->second;
+			return nullptr;
+		}
+		Cell* getCell(sf::Vector2f pos) { return getCell(ftoi(pos)); }
 };
 
 }

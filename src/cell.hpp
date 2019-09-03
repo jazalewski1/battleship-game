@@ -18,6 +18,7 @@ class Cell : public sf::Drawable
 
 		sf::Color m_defaultColor;
 		sf::Color m_hoverColor;
+		sf::Color m_selectColor;
 
 
 	protected:
@@ -31,7 +32,7 @@ class Cell : public sf::Drawable
 		Cell(sf::Vector2i index) :
 			m_shape{sf::Vector2f{g_cellsize, g_cellsize}}, m_size{g_cellsize, g_cellsize},
 			m_index{index}, m_pos{index.x * g_cellsize, index.y * g_cellsize}, m_center{itoc(index)},
-			m_defaultColor{sf::Color::Transparent}, m_hoverColor{sf::Color::Green}
+			m_defaultColor{sf::Color::Transparent}, m_hoverColor{255, 255, 255, 100}, m_selectColor{255, 255, 255, 180}
 		{
 			m_shape.setPosition(m_pos);
 			m_shape.setFillColor(sf::Color::Transparent);
@@ -56,6 +57,7 @@ class Cell : public sf::Drawable
 
 		void defaultColor() { m_shape.setFillColor(m_defaultColor); }
 		void hoverColor() { m_shape.setFillColor(m_hoverColor); }
+		void selectColor() { m_shape.setFillColor(m_selectColor); }
 };
 
 }
