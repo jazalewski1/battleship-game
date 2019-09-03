@@ -112,6 +112,19 @@ class HumanPlayer : public Player
 		{
 			fillShips();
 		}
+
+		bool isReady() const
+		{
+			sf::IntRect gridBounds {m_defenseGrid->getBounds()};
+			for(const auto& ship : m_ships)
+			{
+				sf::IntRect shipBounds {ship.getBounds()};
+				if(!(gridBounds.contains(shipBounds.left, shipBounds.top) &&
+					gridBounds.contains(shipBounds.left + shipBounds.width - 1, shipBounds.top + shipBounds.height - 1)))
+					return false;
+			}
+			return true;
+		}
 };
 
 

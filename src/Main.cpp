@@ -1,10 +1,14 @@
 #include "SFML/Graphics.hpp"
 #include "common.hpp"
-#include "grid.hpp"
-#include "players.hpp"
 #include "sfline.hpp"
 #include "sfutils.hpp"
+
+#include "button.hpp"
+#include "grid.hpp"
+#include "players.hpp"
+
 #include <iostream>
+
 
 
 const sf::Vector2i g_cellcount {22, 26};
@@ -27,9 +31,9 @@ class Simulation : public sf::Drawable
 		enum class Mode {PLACE, ATTACK, WAIT, NONE};
 
 	private:
-		Game::Grid m_attackGrid;
-		Game::Grid m_defenseGrid;
-		Game::Grid m_placeGrid;
+		Grid m_attackGrid;
+		Grid m_defenseGrid;
+		Grid m_placeGrid;
 
 		Turn m_turn;
 		Mode m_mode;
@@ -39,6 +43,8 @@ class Simulation : public sf::Drawable
 
 		Ship* m_activeShip;
 
+		Button m_confirmButton;
+
 
 	private:
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -46,6 +52,9 @@ class Simulation : public sf::Drawable
 			target.draw(m_attackGrid, states);
 			target.draw(m_defenseGrid, states);
 			target.draw(m_placeGrid, states);
+
+			target.draw(m_confirmButton);
+
 			target.draw(m_human);
 			target.draw(m_opponent);
 		}
@@ -59,8 +68,15 @@ class Simulation : public sf::Drawable
 			m_turn{Turn::NONE}, m_mode{Mode::PLACE},
 			m_human{&m_attackGrid, &m_defenseGrid, &m_placeGrid},
 			m_opponent{&m_defenseGrid, &m_attackGrid, &m_placeGrid},
-			m_activeShip{nullptr}
+			m_activeShip{nullptr},
+			m_confirmButton{14, 6, 6, 3}
 		{
+		}
+
+
+		void update()
+		{
+			m_confirmButton.setActive(m_human.isReady() && !m_activeShip);
 		}
 
 
@@ -91,8 +107,12 @@ class Simulation : public sf::Drawable
 				}
 				else
 				{
-					sf::Vector2i index {ftoi(mouse)};
-					m_activeShip = m_human.getShip(index);
+					m_activeShip = m_human.getShip(ftoi(mouse));
+				}
+
+				if(m_confirmButton.pressed(mouse))
+				{
+					m_mode = Mode::ATTACK;
 				}
 			}
 		}
@@ -155,6 +175,8 @@ int main()
 		}
 
 		sim.hover(mouse);
+
+		sim.update();
 
 		window.clear();
 		window.draw(sim);

@@ -34,7 +34,8 @@ class Grid : public sf::Drawable
 
 	public:
 		Grid(sf::Vector2i offset, sf::Vector2i size) :
-			m_offset{offset}, m_size{size}, m_bounds{offset, size}
+			m_offset{offset}, m_size{size}, m_bounds{offset, size},
+			m_hoverCell{nullptr}
 		{
 			for(int y = 0; y < m_size.y; ++y)
 			{
