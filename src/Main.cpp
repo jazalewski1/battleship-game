@@ -33,8 +33,8 @@ class Simulation : public sf::Drawable
 		enum class Mode {PLACE, ATTACK, NONE};
 
 	private:
-		Grid m_attackGrid;
-		Grid m_defenseGrid;
+		GridLabeled m_attackGrid;
+		GridLabeled m_defenseGrid;
 		Grid m_placeGrid;
 
 		Turn m_turn;
@@ -82,7 +82,7 @@ class Simulation : public sf::Drawable
 		Simulation() :
 			m_attackGrid{2, 2, g_boardcount, g_boardcount},
 			m_defenseGrid{2, 14, g_boardcount, g_boardcount},
-			m_placeGrid{14, 14, 5, 9},
+			m_placeGrid{14, 14, 5, 10},
 			m_turn{Turn::NONE}, m_mode{Mode::PLACE},
 			m_human{&m_attackGrid, &m_defenseGrid, &m_placeGrid},
 			m_opponent{&m_defenseGrid, &m_attackGrid, &m_placeGrid},

@@ -61,6 +61,43 @@ class Grid : public sf::Drawable
 		Cell* getCell(sf::Vector2f pos) { return getCell(ftoi(pos)); }
 };
 
+class GridLabeled : public Grid
+{
+	private:
+		std::unordered_map<sf::Vector2i, LabelCell> m_labels;
+
+	private:
+		void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+		{
+			Grid::draw(target, states);
+			for(const auto& cell : m_labels)
+				target.draw(cell.second, states);
+		}
+
+	public:
+		GridLabeled(sf::Vector2i offset, sf::Vector2i size) :
+			Grid{offset, size}
+		{
+			for(int x = 0; x < size.x; ++x)
+			{
+				sf::Vector2i index {offset.x + x, offset.y - 1};
+				char symbol {static_cast<char>(48 + x)};
+				m_labels.emplace(index, LabelCell{index, symbol});
+			}
+			for(int y = 0; y < size.y; ++y)
+			{
+				sf::Vector2i index {offset.x - 1, offset.y + y};
+				char symbol {static_cast<char>(65 + y)};
+				m_labels.emplace(index, LabelCell{index, symbol});
+			}
+		}
+		GridLabeled(int offsetX, int offsetY, int sizeX, int sizeY) :
+			GridLabeled{sf::Vector2i{offsetX, offsetY}, sf::Vector2i{sizeX, sizeY}}
+		{
+		}
+
+};
+
 }
 
 

@@ -60,6 +60,36 @@ class Cell : public sf::Drawable
 		void selectColor() { m_shape.setFillColor(m_selectColor); }
 };
 
+
+class LabelCell : public Cell
+{
+	private:
+		sf::Text m_text;
+		char m_symbol;
+
+	private:
+		void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+		{
+			Cell::draw(target, states);
+			target.draw(m_text);
+		}
+
+	public:
+		LabelCell(sf::Vector2i index, char symbol) :
+			Cell{index}, m_text{symbol, g_font, 24U}, m_symbol{symbol}
+		{
+			m_shape.setOutlineThickness(0.0f);
+
+			m_text.setOrigin(m_text.getLocalBounds().width * 0.5f, m_text.getLocalBounds().height);
+			m_text.setPosition(m_center);
+			m_text.setFillColor(m_selectColor);
+		}
+		LabelCell(int indexX, int indexY, char symbol) :
+			LabelCell{sf::Vector2i{indexX, indexY} ,symbol}
+		{
+		}
+};
+
 }
 
 #endif
