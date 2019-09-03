@@ -100,10 +100,10 @@ class HumanPlayer : public Player
 		{
 			sf::Vector2i start {m_placeGrid->getBounds().left, m_placeGrid->getBounds().top};
 			m_ships.push_back(Ship{start.x, start.y + 0, 5});
-			m_ships.push_back(Ship{start.x, start.y + 1, 4});
-			m_ships.push_back(Ship{start.x, start.y + 2, 3});
-			m_ships.push_back(Ship{start.x, start.y + 3, 3});
-			m_ships.push_back(Ship{start.x, start.y + 4, 2});
+			m_ships.push_back(Ship{start.x, start.y + 2, 4});
+			m_ships.push_back(Ship{start.x, start.y + 4, 3});
+			m_ships.push_back(Ship{start.x, start.y + 6, 3});
+			m_ships.push_back(Ship{start.x, start.y + 8, 2});
 		}
 
 	public:

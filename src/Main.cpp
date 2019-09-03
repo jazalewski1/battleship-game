@@ -19,6 +19,7 @@ const int g_boardcount {10};
 
 sf::Vector2i ftoi(sf::Vector2f pos) { return sf::Vector2i{static_cast<int>(pos.x / g_cellsize), static_cast<int>(pos.y / g_cellsize)}; }
 sf::Vector2f itof(sf::Vector2i index) { return sf::Vector2f{index.x * g_cellsize, index.y * g_cellsize}; }
+sf::Vector2f itoc(sf::Vector2i index) { return sf::Vector2f{(index.x * g_cellsize) + (g_cellsize * 0.5f), (index.y * g_cellsize) + (g_cellsize * 0.5f)}; }
 
 
 namespace Game
@@ -64,7 +65,7 @@ class Simulation : public sf::Drawable
 		Simulation() :
 			m_attackGrid{2, 2, g_boardcount, g_boardcount},
 			m_defenseGrid{2, 14, g_boardcount, g_boardcount},
-			m_placeGrid{14, 14, 5, 5},
+			m_placeGrid{14, 14, 5, 9},
 			m_turn{Turn::NONE}, m_mode{Mode::PLACE},
 			m_human{&m_attackGrid, &m_defenseGrid, &m_placeGrid},
 			m_opponent{&m_defenseGrid, &m_attackGrid, &m_placeGrid},

@@ -33,7 +33,7 @@ class Ship : public sf::Drawable
 			m_shape.setOrigin(m_shape.getSize() * 0.5f);
 
 			m_shape.setPosition(m_center);
-			m_shape.setFillColor(sf::Color{160, 160, 160, 100});
+			m_shape.setFillColor(sf::Color{180, 180, 180});
 			m_shape.setOutlineColor(sf::Color{100, 100, 100});
 			m_shape.setOutlineThickness(3.0f);
 		}
