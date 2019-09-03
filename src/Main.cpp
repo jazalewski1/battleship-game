@@ -35,6 +35,8 @@ class Simulation : public sf::Drawable
 		Mode m_mode;
 
 		HumanPlayer m_human;
+		ComputerPlayer m_opponent;
+
 		Ship* m_activeShip;
 
 
@@ -45,33 +47,7 @@ class Simulation : public sf::Drawable
 			target.draw(m_defenseGrid, states);
 			target.draw(m_placeGrid, states);
 			target.draw(m_human);
-		}
-
-		bool placeable(sf::IntRect test)
-		{
-			for(int y = 0; y < test.height; ++y)
-			{
-				for(int x = 0; x < test.width; ++x)
-				{
-					sf::Vector2i index {test.left + x, test.top + y};
-					if(!m_defenseGrid.contains(index))
-						return false;
-				}
-			}
-			for(int y = 0; y < test.height + 2; ++y)
-			{
-				for(int x = 0; x < test.width + 2; ++x)
-				{
-					sf::Vector2i index {test.left - 1 + x, test.top - 1 + y};
-					if(m_activeShip->contains(index))
-						continue;
-
-					if(m_human.isShip(index))
-						return false;
-				}
-			}
-
-			return true;
+			target.draw(m_opponent);
 		}
 
 
@@ -82,6 +58,7 @@ class Simulation : public sf::Drawable
 			m_placeGrid{14, 14, 5, 5},
 			m_turn{Turn::NONE}, m_mode{Mode::PLACE},
 			m_human{&m_attackGrid, &m_defenseGrid, &m_placeGrid},
+			m_opponent{&m_defenseGrid, &m_attackGrid, &m_placeGrid},
 			m_activeShip{nullptr}
 		{
 		}
@@ -106,7 +83,7 @@ class Simulation : public sf::Drawable
 			{
 				if(m_activeShip)
 				{
-					if(placeable(m_activeShip->getGhostBounds()))
+					if(m_human.placeable(m_activeShip))
 					{
 						m_activeShip->adjust(mouse);
 						m_activeShip = nullptr;
@@ -151,7 +128,9 @@ int main()
 		while(window.pollEvent(event))
 		{
 			if(event.type == sf::Event::Closed)
+			{
 				window.close();
+			}
 
 			if(event.type == sf::Event::MouseButtonPressed)
 			{
@@ -167,6 +146,11 @@ int main()
 				{
 					sim.spacebar();
 				}
+				if(event.key.code == sf::Keyboard::Escape)
+				{
+					window.close();
+				}
+
 			}
 		}
 

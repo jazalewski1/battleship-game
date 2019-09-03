@@ -33,7 +33,7 @@ class Ship : public sf::Drawable
 			m_shape.setOrigin(m_shape.getSize() * 0.5f);
 
 			m_shape.setPosition(m_center);
-			m_shape.setFillColor(sf::Color{160, 160, 160});
+			m_shape.setFillColor(sf::Color{160, 160, 160, 100});
 			m_shape.setOutlineColor(sf::Color{100, 100, 100});
 			m_shape.setOutlineThickness(3.0f);
 		}
@@ -47,13 +47,14 @@ class Ship : public sf::Drawable
 		{
 			sf::Vector2f diff {(m_shape.getSize().x * 0.5f) - (g_cellsize * 0.5f), (m_shape.getSize().y * 0.5f) - (g_cellsize * 0.5f)};
 			m_offset = ftoi(center - diff);
+			m_bounds = sf::IntRect{m_offset, m_size};
 			m_center = itof(m_offset) + (m_shape.getSize() * 0.5f);
 			m_shape.setPosition(m_center);
-			m_bounds = sf::IntRect{m_offset, m_size};
 		}
 		void adjust(float posX, float posY) { adjust(sf::Vector2f{posX, posY}); }
 
 		bool contains(sf::Vector2i index) const { return m_bounds.contains(index); }
+		bool contains(int indexX, int indexY) const { return m_bounds.contains(sf::Vector2i{indexX, indexY}); }
 
 		void rotate()
 		{
@@ -76,6 +77,7 @@ class Ship : public sf::Drawable
 			m_shape.setOrigin(m_shape.getSize() * 0.5f);
 		}
 
+
 		sf::IntRect getBounds() const { return m_bounds; }
 		sf::IntRect getGhostBounds() const
 		{
@@ -91,6 +93,14 @@ class Ship : public sf::Drawable
 			m_shape.setPosition(m_center);
 		}
 		void setCenter(float posX, float posY) { setCenter(sf::Vector2f{posX, posY}); }
+
+		void setOffset(sf::Vector2i offset)
+		{
+			m_offset = offset;
+			m_bounds = sf::IntRect{m_offset, m_size};
+			m_center = itof(m_offset) + (m_shape.getSize() * 0.5f);
+			m_shape.setPosition(m_center);
+		}
 
 };
 
