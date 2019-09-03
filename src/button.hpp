@@ -18,32 +18,51 @@ class Button : public sf::Drawable
 
 		bool m_isActive;
 		sf::Color m_activeColor;
+		sf::Color m_activeColorDetail;
 		sf::Color m_unactiveColor;
+		sf::Color m_unactiveColorDetail;
+
+		sf::Text m_text;
 
 	private:
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const
 		{
 			target.draw(m_shape, states);
+			target.draw(m_text, states);
 		}
 
 		void changeColor()
 		{
 			if(m_isActive)
+			{
 				m_shape.setFillColor(m_activeColor);
+				m_shape.setOutlineColor(m_activeColorDetail);
+				m_text.setFillColor(m_activeColorDetail);
+			}
 			else
+			{
 				m_shape.setFillColor(m_unactiveColor);
+				m_shape.setOutlineColor(m_unactiveColorDetail);
+				m_text.setFillColor(m_unactiveColorDetail);
+			}
 		}
 
 	public:
 		Button(sf::Vector2i offset, sf::Vector2i size, bool active = false) :
 			m_shape{itof(size)}, m_offset{offset}, m_size{size},
-			m_isActive{active}, m_activeColor{83, 158, 24}, m_unactiveColor{196, 196, 196}
+			m_isActive{active},
+			m_activeColor{83, 158, 24}, m_activeColorDetail{33, 108, 4},
+			m_unactiveColor{196, 196, 196}, m_unactiveColorDetail{146, 146, 146},
+			m_text{"CONFIRM", g_font, 36}
 		{
 			m_shape.setPosition(itof(m_offset));
+			m_shape.setOutlineThickness(3.0f);
 			changeColor();
 
-			m_center.x = m_shape.getLocalBounds().left + (m_shape.getLocalBounds().width * 0.5f);
-			m_center.x = m_shape.getLocalBounds().top + (m_shape.getLocalBounds().height * 0.5f);
+			m_center = itof(m_offset) + (m_shape.getSize() * 0.5f);
+
+			m_text.setOrigin(m_text.getLocalBounds().width * 0.5f, m_text.getLocalBounds().height);
+			m_text.setPosition(m_center);
 		}
 		Button(int offsetX, int offsetY, int sizeX, int sizeY, bool active = false) :
 			Button{sf::Vector2i{offsetX, offsetY}, sf::Vector2i{sizeX, sizeY}, active}
@@ -58,6 +77,7 @@ class Button : public sf::Drawable
 			m_isActive = active;
 			changeColor();
 		}
+		void setText(const char* text) { m_text.setString(text); }
 };
 
 }

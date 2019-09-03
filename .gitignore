@@ -43,3 +43,5 @@ Thumbs.db
 *.out
 # Main.d is changed everytime project is build and it pops up in changes
 *.d
+# Fonts
+*.ttf

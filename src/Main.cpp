@@ -15,6 +15,7 @@ const sf::Vector2i g_cellcount {22, 26};
 const float g_cellsize {32};
 const sf::Vector2u g_winsize {static_cast<unsigned int>(g_cellcount.x * g_cellsize), static_cast<unsigned int>(g_cellcount.y * g_cellsize)};
 const int g_boardcount {10};
+sf::Font g_font;
 
 
 sf::Vector2i ftoi(sf::Vector2f pos) { return sf::Vector2i{static_cast<int>(pos.x / g_cellsize), static_cast<int>(pos.y / g_cellsize)}; }
@@ -135,6 +136,9 @@ int main()
 {
 	sf::RenderWindow window {sf::VideoMode{g_winsize.x, g_winsize.y}, "Battleship Game"};
 	window.setFramerateLimit(60);
+
+	if(!g_font.loadFromFile("content/consola.ttf"))
+		return EXIT_FAILURE;
 
 
 	Game::Simulation sim;
