@@ -45,7 +45,7 @@ class Player : public sf::Drawable
 			return false;
 		}
 
-		bool placeable(const Ship* test)
+		bool placeable(const Ship* test) const
 		{
 			sf::IntRect rect {test->getGhostBounds()};
 			for(int y = 0; y < rect.height; ++y)
@@ -71,8 +71,24 @@ class Player : public sf::Drawable
 			}
 			return true;
 		}
+		bool shootable(sf::Vector2i index) const { return m_markers.find(index) == m_markers.end(); }
+		bool shootable(sf::Vector2f pos) const { return m_markers.find(ftoi(pos)) == m_markers.end(); }
+		void markShot(sf::Vector2i index, bool isHit)
+		{
+			m_markers.emplace(index, Marker{index, isHit});
+		}
+
 
 		Ship* getShip(sf::Vector2i index)
+		{
+			for(auto& ship : m_ships)
+			{
+				if(ship.contains(index))
+					return &ship;
+			}
+			return nullptr;
+		}
+		const Ship* getShip(sf::Vector2i index) const
 		{
 			for(auto& ship : m_ships)
 			{
@@ -133,11 +149,12 @@ class ComputerPlayer : public Player
 	private:
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const override
 		{
-			for(const auto& ship : m_ships)
-				target.draw(ship, states);
+			// for(const auto& ship : m_ships)
+			// 	target.draw(ship, states);
 			for(const auto& marker : m_markers)
 				target.draw(marker.second, states);
 		}
+
 
 		void fillShips() override
 		{
@@ -168,9 +185,23 @@ class ComputerPlayer : public Player
 			fillShips();
 		}
 
-		sf::Vector2i makeShot()
+		sf::Vector2i makeShot() const
 		{
 			// brain, deciding where the shot should be, based on markers, probable indexes etc.
+			// keep track of destroyed sizes, for that also count consecutive hit shots
+			// keep track of last shot, and direction (int unit vector)
+			// if last shot was hit, set some direction and follow it or not
+
+			sf::IntRect bounds {m_attackGrid->getBounds()};
+			sf::Vector2i index;
+			do
+			{
+				index.x = random::get(0, bounds.width - 1);
+				index.y = random::get(0, bounds.height - 1);
+				index += sf::Vector2i{bounds.left, bounds.top};
+			} while(!shootable(index));
+
+			return index;
 		}
 };
 

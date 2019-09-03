@@ -63,6 +63,20 @@ class Simulation : public sf::Drawable
 			target.draw(m_opponent);
 		}
 
+		void humanShoot()
+		{
+			if(m_selectCell)
+			{
+				sf::Vector2i index {m_selectCell->getIndex()};
+				bool isHit {m_opponent.isShip(index)};
+				m_human.markShot(index, isHit);
+				m_turn = Turn::OPPONENT;
+
+				m_selectCell->defaultColor();
+			}
+			m_selectCell = nullptr;
+		}
+
 
 	public:
 		Simulation() :
@@ -95,8 +109,13 @@ class Simulation : public sf::Drawable
 				if(m_turn == Turn::OPPONENT)
 				{
 					m_confirmButton.setActive(false);
+
 					// here may be the function to think, delaying the shot
+
 					sf::Vector2i shot {m_opponent.makeShot()};
+					bool isHit {m_human.isShip(shot)};
+					m_opponent.markShot(shot, isHit);
+
 					m_turn = Turn::HUMAN;
 				}
 			}
@@ -131,22 +150,22 @@ class Simulation : public sf::Drawable
 			{
 				if(m_selectCell)
 					m_selectCell->defaultColor();
-				if(m_attackGrid.contains(mouse))
+				if(m_attackGrid.contains(mouse) && m_human.shootable(mouse))
 				{
 					m_selectCell = m_attackGrid.getCell(mouse);
 					if(m_selectCell)
 						m_selectCell->selectColor();
 				}
-				else
-				{
-					if(m_selectCell)
-						m_selectCell->defaultColor();
-					m_selectCell = nullptr;
-				}
+				// else
+				// {
+				// 	if(m_selectCell)
+				// 		m_selectCell->defaultColor();
+				// 	m_selectCell = nullptr;
+				// }
 
 				if(m_confirmButton.pressed(mouse))
 				{
-					m_turn = Turn::OPPONENT;
+					humanShoot();
 				}
 			}
 		}
@@ -183,9 +202,14 @@ class Simulation : public sf::Drawable
 
 		void spacebar()
 		{
-			if(m_selectShip)
+			if(m_mode == Mode::PLACE)
 			{
-				m_selectShip->rotate();
+				if(m_selectShip)
+					m_selectShip->rotate();
+			}
+			if(m_mode == Mode::ATTACK)
+			{
+				humanShoot();
 			}
 		}
 };

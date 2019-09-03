@@ -21,12 +21,13 @@ class Marker : public sf::Drawable
 
 	public:
 		Marker(sf::Vector2i index, bool isHit) :
-			m_shape{g_cellsize * 0.7f}, m_index{index}, m_hit{isHit}
+			m_shape{g_cellsize * 0.35f}, m_index{index}, m_hit{isHit}
 		{
 			m_shape.setOrigin(m_shape.getRadius(), m_shape.getRadius());
 			m_pos = sf::Vector2f{itof(index).x + (g_cellsize / 2), itof(index).y + (g_cellsize / 2)};
 			m_shape.setPosition(m_pos);
 			sf::Color color {m_hit ? sf::Color::Red : sf::Color::White};
+			m_shape.setFillColor(color);
 		}
 };
 
