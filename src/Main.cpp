@@ -63,6 +63,54 @@ class Simulation : public sf::Drawable
 			target.draw(m_opponent);
 		}
 
+		void selectShip(sf::Vector2f mouse)
+		{
+			if(m_selectShip)
+			{
+				if(m_human.placeable(m_selectShip))
+				{
+					m_selectShip->adjust(mouse);
+					m_selectShip = nullptr;
+				}
+			}
+			else
+			{
+				m_selectShip = m_human.getShip(ftoi(mouse));
+			}
+		}
+		void hoverCell(sf::Vector2f mouse)
+		{
+			if(m_attackGrid.contains(mouse))
+			{
+				if(m_hoverCell && m_hoverCell != m_selectCell)
+					m_hoverCell->defaultColor();
+
+				m_hoverCell = m_attackGrid.getCell(mouse);
+				if(m_hoverCell && m_hoverCell != m_selectCell)
+					m_hoverCell->hoverColor();
+			}
+			else
+			{
+				if(m_hoverCell && m_hoverCell != m_selectCell)
+					m_hoverCell->defaultColor();
+				m_hoverCell = nullptr;
+			}
+		}
+		void selectCell(sf::Vector2f mouse)
+		{
+			if(m_selectCell)
+				m_selectCell->defaultColor();
+			if(m_attackGrid.contains(mouse) && m_human.shootable(mouse))
+			{
+				m_selectCell = m_attackGrid.getCell(mouse);
+				if(m_selectCell)
+					m_selectCell->selectColor();
+			}
+			else
+			{
+				m_selectCell = nullptr;
+			}
+		}
 		void humanShoot()
 		{
 			if(m_selectCell)
@@ -75,6 +123,14 @@ class Simulation : public sf::Drawable
 				m_selectCell->defaultColor();
 			}
 			m_selectCell = nullptr;
+		}
+		void opponentShoot()
+		{
+			sf::Vector2i shot {m_opponent.makeShot()};
+			bool isHit {m_human.isShip(shot)};
+			m_opponent.markShot(shot, isHit);
+
+			m_turn = Turn::HUMAN;
 		}
 
 
@@ -112,12 +168,22 @@ class Simulation : public sf::Drawable
 
 					// here may be the function to think, delaying the shot
 
-					sf::Vector2i shot {m_opponent.makeShot()};
-					bool isHit {m_human.isShip(shot)};
-					m_opponent.markShot(shot, isHit);
-
-					m_turn = Turn::HUMAN;
+					opponentShoot();
 				}
+			}
+		}
+
+		void hover(sf::Vector2f mouse)
+		{
+			if(m_mode == Mode::PLACE)
+			{
+				if(m_selectShip)
+					m_selectShip->setCenter(mouse);
+			}
+
+			if(m_mode == Mode::ATTACK)
+			{
+				hoverCell(mouse);
 			}
 		}
 
@@ -125,18 +191,7 @@ class Simulation : public sf::Drawable
 		{
 			if(m_mode == Mode::PLACE)
 			{
-				if(m_selectShip)
-				{
-					if(m_human.placeable(m_selectShip))
-					{
-						m_selectShip->adjust(mouse);
-						m_selectShip = nullptr;
-					}
-				}
-				else
-				{
-					m_selectShip = m_human.getShip(ftoi(mouse));
-				}
+				selectShip(mouse);
 
 				if(m_confirmButton.pressed(mouse))
 				{
@@ -148,54 +203,11 @@ class Simulation : public sf::Drawable
 
 			if(m_mode == Mode::ATTACK)
 			{
-				if(m_selectCell)
-					m_selectCell->defaultColor();
-				if(m_attackGrid.contains(mouse) && m_human.shootable(mouse))
-				{
-					m_selectCell = m_attackGrid.getCell(mouse);
-					if(m_selectCell)
-						m_selectCell->selectColor();
-				}
-				// else
-				// {
-				// 	if(m_selectCell)
-				// 		m_selectCell->defaultColor();
-				// 	m_selectCell = nullptr;
-				// }
+				selectCell(mouse);
 
 				if(m_confirmButton.pressed(mouse))
 				{
 					humanShoot();
-				}
-			}
-		}
-
-		void hover(sf::Vector2f mouse)
-		{
-			if(m_mode == Mode::PLACE)
-			{
-				if(m_selectShip)
-				{
-					m_selectShip->setCenter(mouse);
-				}
-			}
-
-			if(m_mode == Mode::ATTACK)
-			{
-				if(m_attackGrid.contains(mouse))
-				{
-					if(m_hoverCell && m_hoverCell != m_selectCell)
-						m_hoverCell->defaultColor();
-
-					m_hoverCell = m_attackGrid.getCell(mouse);
-					if(m_hoverCell && m_hoverCell != m_selectCell)
-						m_hoverCell->hoverColor();
-				}
-				else
-				{
-					if(m_hoverCell && m_hoverCell != m_selectCell)
-						m_hoverCell->defaultColor();
-					m_hoverCell = nullptr;
 				}
 			}
 		}
