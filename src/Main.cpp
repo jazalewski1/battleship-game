@@ -124,18 +124,24 @@ class Simulation : public sf::Drawable
 		}
 		void humanShoot()
 		{
-			if(m_selectCell)
+			if(m_selectCell && m_confirmButton.isActive())
 			{
 				sf::Vector2i index {m_selectCell->getIndex()};
 				bool isHit {m_opponent.isShip(index)};
 				m_human.markShot(index, isHit);
-				m_turn = Turn::OPPONENT;
 
 				m_humanPointsText.setString("Human: ", m_human.getPoints(), "/", 17);
 
 				m_selectCell->defaultColor();
+
+				m_turn = Turn::OPPONENT;
+				m_opponent.startThinking();
+
+				if(m_selectCell)
+					m_selectCell->defaultColor();
+
+				m_selectCell = nullptr;
 			}
-			m_selectCell = nullptr;
 		}
 		void opponentShoot()
 		{
@@ -190,9 +196,9 @@ class Simulation : public sf::Drawable
 				{
 					m_confirmButton.setActive(false);
 
-					// here may be the function to think, delaying the shot
-
-					opponentShoot();
+					m_opponent.think();
+					if(!m_opponent.isThinking())
+						opponentShoot();
 				}
 			}
 		}
@@ -228,10 +234,12 @@ class Simulation : public sf::Drawable
 			if(m_mode == Mode::ATTACK)
 			{
 				selectCell(mouse);
-
-				if(m_confirmButton.pressed(mouse))
+				if(m_turn == Turn::HUMAN)
 				{
-					humanShoot();
+					if(m_confirmButton.pressed(mouse))
+					{
+						humanShoot();
+					}
 				}
 			}
 		}

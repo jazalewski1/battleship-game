@@ -4,6 +4,7 @@
 
 #include "SFML/Graphics.hpp"
 #include "common.hpp"
+#include "guitext.hpp"
 
 namespace Game
 {
@@ -22,7 +23,7 @@ class Button : public sf::Drawable
 		sf::Color m_unactiveColor;
 		sf::Color m_unactiveColorDetail;
 
-		sf::Text m_text;
+		Gui::Text m_text;
 
 	private:
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -53,7 +54,7 @@ class Button : public sf::Drawable
 			m_isActive{active},
 			m_activeColor{83, 158, 24}, m_activeColorDetail{33, 108, 4},
 			m_unactiveColor{196, 196, 196}, m_unactiveColorDetail{146, 146, 146},
-			m_text{"CONFIRM", g_font, 36}
+			m_text{itoc(offset), "CONFIRM"}
 		{
 			m_shape.setPosition(itof(m_offset));
 			m_shape.setOutlineThickness(3.0f);
@@ -61,7 +62,9 @@ class Button : public sf::Drawable
 
 			m_center = itof(m_offset) + (m_shape.getSize() * 0.5f);
 
-			m_text.setOrigin(m_text.getLocalBounds().width * 0.5f, m_text.getLocalBounds().height);
+			m_text.setFont(g_font);
+			m_text.setCharacterSize(32);
+			m_text.alignToCenter();
 			m_text.setPosition(m_center);
 		}
 		Button(int offsetX, int offsetY, int sizeX, int sizeY, bool active = false) :
@@ -78,6 +81,8 @@ class Button : public sf::Drawable
 			changeColor();
 		}
 		void setText(const char* text) { m_text.setString(text); }
+
+		bool isActive() const { return m_isActive; }
 };
 
 }

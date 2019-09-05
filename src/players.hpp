@@ -8,6 +8,7 @@
 #include "random.hpp"
 #include "ship.hpp"
 #include <iostream>
+#include <unordered_map>
 #include <vector>
 
 
@@ -153,6 +154,10 @@ class HumanPlayer : public Player
 class ComputerPlayer : public Player
 {
 	private:
+		int m_delayLimit;
+		int m_delayCounter;
+
+	private:
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const override
 		{
 			// for(const auto& ship : m_ships)
@@ -209,6 +214,14 @@ class ComputerPlayer : public Player
 
 			return index;
 		}
+
+		void startThinking()
+		{
+			m_delayLimit = random::get(20, 90);
+			m_delayCounter = 0;
+		}
+		void think() { ++m_delayCounter; }
+		bool isThinking() const { return m_delayCounter < m_delayLimit; }
 };
 
 
