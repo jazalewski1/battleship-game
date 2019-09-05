@@ -110,16 +110,15 @@ class Simulation : public sf::Drawable
 		void selectCell(sf::Vector2f mouse)
 		{
 			if(m_selectCell)
+			{
 				m_selectCell->defaultColor();
+				m_selectCell = nullptr;
+			}
 			if(m_attackGrid.contains(mouse) && m_human.shootable(mouse))
 			{
 				m_selectCell = m_attackGrid.getCell(mouse);
 				if(m_selectCell)
 					m_selectCell->selectColor();
-			}
-			else
-			{
-				m_selectCell = nullptr;
 			}
 		}
 		void humanShoot()
@@ -159,7 +158,7 @@ class Simulation : public sf::Drawable
 		Simulation() :
 			m_attackGrid{2, 2, g_boardcount, g_boardcount},
 			m_defenseGrid{2, 14, g_boardcount, g_boardcount},
-			m_placeGrid{14, 14, 5, 10},
+			m_placeGrid{14, 14, 6, 10},
 			m_humanPointsText{itoc(sf::Vector2i{14, 14})}, m_opponentPointsText{itoc(sf::Vector2i{14, 15})},
 			m_turn{Turn::NONE}, m_mode{Mode::PLACE},
 			m_human{&m_attackGrid, &m_defenseGrid, &m_placeGrid},
@@ -233,7 +232,6 @@ class Simulation : public sf::Drawable
 
 			if(m_mode == Mode::ATTACK)
 			{
-				selectCell(mouse);
 				if(m_turn == Turn::HUMAN)
 				{
 					if(m_confirmButton.pressed(mouse))
@@ -241,6 +239,7 @@ class Simulation : public sf::Drawable
 						humanShoot();
 					}
 				}
+				selectCell(mouse);
 			}
 		}
 
