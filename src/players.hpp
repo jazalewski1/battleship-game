@@ -24,6 +24,7 @@ class Player : public sf::Drawable
 		const Grid* m_attackGrid;
 		const Grid* m_defenseGrid;
 		const Grid* m_placeGrid;
+		int m_points;
 
 		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
 		virtual void fillShips() = 0;
@@ -31,7 +32,8 @@ class Player : public sf::Drawable
 
 	public:
 		Player(const Grid* attackGrid, const Grid* defenseGrid, const Grid* placeGrid) :
-			m_attackGrid{attackGrid}, m_defenseGrid{defenseGrid}, m_placeGrid{placeGrid}
+			m_attackGrid{attackGrid}, m_defenseGrid{defenseGrid}, m_placeGrid{placeGrid},
+			m_points{0}
 		{
 		}
 
@@ -76,6 +78,9 @@ class Player : public sf::Drawable
 		void markShot(sf::Vector2i index, bool isHit)
 		{
 			m_markers.emplace(index, Marker{index, isHit});
+
+			if(isHit)
+				++m_points;
 		}
 
 
@@ -97,6 +102,7 @@ class Player : public sf::Drawable
 			}
 			return nullptr;
 		}
+		int getPoints() const { return m_points; }
 
 };
 

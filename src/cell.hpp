@@ -3,6 +3,7 @@
 
 #include "SFML/Graphics.hpp"
 #include "common.hpp"
+#include "guitext.hpp"
 
 namespace Game
 {
@@ -64,7 +65,7 @@ class Cell : public sf::Drawable
 class LabelCell : public Cell
 {
 	private:
-		sf::Text m_text;
+		Gui::Text m_text;
 		char m_symbol;
 
 	private:
@@ -76,12 +77,13 @@ class LabelCell : public Cell
 
 	public:
 		LabelCell(sf::Vector2i index, char symbol) :
-			Cell{index}, m_text{symbol, g_font, 24U}, m_symbol{symbol}
+			Cell{index}, m_text{m_center}, m_symbol{symbol}
 		{
 			m_shape.setOutlineThickness(0.0f);
 
-			m_text.setOrigin(m_text.getLocalBounds().width * 0.5f, m_text.getLocalBounds().height);
-			m_text.setPosition(m_center);
+			m_text.setFont(g_font);
+			m_text.setString(m_symbol);
+			m_text.alignToCenter();
 			m_text.setFillColor(m_selectColor);
 		}
 		LabelCell(int indexX, int indexY, char symbol) :

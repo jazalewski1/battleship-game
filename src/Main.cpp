@@ -37,6 +37,9 @@ class Simulation : public sf::Drawable
 		GridLabeled m_defenseGrid;
 		Grid m_placeGrid;
 
+		Gui::Text m_humanPointsText;
+		Gui::Text m_opponentPointsText;
+
 		Turn m_turn;
 		Mode m_mode;
 
@@ -55,7 +58,15 @@ class Simulation : public sf::Drawable
 		{
 			target.draw(m_attackGrid, states);
 			target.draw(m_defenseGrid, states);
-			target.draw(m_placeGrid, states);
+			if(m_mode == Mode::PLACE)
+			{
+				target.draw(m_placeGrid, states);
+			}
+			if(m_mode == Mode::ATTACK)
+			{
+				target.draw(m_humanPointsText);
+				target.draw(m_opponentPointsText);
+			}
 
 			target.draw(m_confirmButton);
 
@@ -120,6 +131,8 @@ class Simulation : public sf::Drawable
 				m_human.markShot(index, isHit);
 				m_turn = Turn::OPPONENT;
 
+				m_humanPointsText.setString("Human: ", m_human.getPoints(), "/", 17);
+
 				m_selectCell->defaultColor();
 			}
 			m_selectCell = nullptr;
@@ -130,6 +143,8 @@ class Simulation : public sf::Drawable
 			bool isHit {m_human.isShip(shot)};
 			m_opponent.markShot(shot, isHit);
 
+			m_opponentPointsText.setString("Computer: ", m_opponent.getPoints(), "/", 17);
+
 			m_turn = Turn::HUMAN;
 		}
 
@@ -139,6 +154,7 @@ class Simulation : public sf::Drawable
 			m_attackGrid{2, 2, g_boardcount, g_boardcount},
 			m_defenseGrid{2, 14, g_boardcount, g_boardcount},
 			m_placeGrid{14, 14, 5, 10},
+			m_humanPointsText{itoc(sf::Vector2i{14, 14})}, m_opponentPointsText{itoc(sf::Vector2i{14, 15})},
 			m_turn{Turn::NONE}, m_mode{Mode::PLACE},
 			m_human{&m_attackGrid, &m_defenseGrid, &m_placeGrid},
 			m_opponent{&m_defenseGrid, &m_attackGrid, &m_placeGrid},
@@ -146,6 +162,14 @@ class Simulation : public sf::Drawable
 			m_hoverCell{nullptr}, m_selectCell{nullptr},
 			m_confirmButton{14, 6, 6, 3}
 		{
+			m_humanPointsText.setString("Human: ", m_human.getPoints(), "/", 17);
+			m_humanPointsText.setFont(g_font);
+			m_humanPointsText.alignToCenterY();
+			m_humanPointsText.setFillColor(sf::Color::White);
+			m_opponentPointsText.setString("Computer: ", m_opponent.getPoints(), "/", 17);
+			m_opponentPointsText.setFont(g_font);
+			m_opponentPointsText.alignToCenterY();
+			m_opponentPointsText.setFillColor(sf::Color::White);
 		}
 
 
