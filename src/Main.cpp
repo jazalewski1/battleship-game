@@ -11,7 +11,7 @@
 
 
 
-const sf::Vector2i g_cellcount {22, 26};
+const sf::Vector2i g_cellcount {22, 28};
 const float g_cellsize {32};
 const sf::Vector2u g_winsize {static_cast<unsigned int>(g_cellcount.x * g_cellsize), static_cast<unsigned int>(g_cellcount.y * g_cellsize)};
 const int g_boardcount {10};
@@ -37,14 +37,11 @@ class Simulation : public sf::Drawable
 		GridLabeled m_defenseGrid;
 		Grid m_placeGrid;
 
-		Gui::Text m_humanPointsText;
-		Gui::Text m_opponentPointsText;
+		HumanPlayer m_human;
+		ComputerPlayer m_opponent;
 
 		Turn m_turn;
 		Mode m_mode;
-
-		HumanPlayer m_human;
-		ComputerPlayer m_opponent;
 
 		Ship* m_selectShip;
 		Cell* m_hoverCell;
@@ -52,6 +49,9 @@ class Simulation : public sf::Drawable
 
 		Button m_confirmButton;
 
+		Gui::Text m_humanPointsText;
+		Gui::Text m_opponentPointsText;
+		Gui::Text m_messageText;
 
 	private:
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -67,6 +67,7 @@ class Simulation : public sf::Drawable
 				target.draw(m_humanPointsText);
 				target.draw(m_opponentPointsText);
 			}
+			target.draw(m_messageText);
 
 			target.draw(m_confirmButton);
 
@@ -133,13 +134,15 @@ class Simulation : public sf::Drawable
 
 				m_selectCell->defaultColor();
 
-				m_turn = Turn::OPPONENT;
 				m_opponent.startThinking();
 
 				if(m_selectCell)
 					m_selectCell->defaultColor();
 
 				m_selectCell = nullptr;
+
+				m_messageText.append((isHit ? " It's a hit!" : "It's a miss..."));
+				m_turn = Turn::OPPONENT;
 			}
 		}
 		void opponentShoot()
@@ -148,33 +151,65 @@ class Simulation : public sf::Drawable
 			bool isHit {m_human.isShip(shot)};
 			m_opponent.markShot(shot, isHit);
 
+			m_messageText.append((isHit ? " It's a hit!" : "It's a miss."));
 			m_opponentPointsText.setString("Computer: ", m_opponent.getPoints(), "/", 17);
 
 			m_turn = Turn::HUMAN;
+		}
+		void chooseMessage()
+		{
+			if(m_mode == Mode::PLACE)
+			{
+				m_messageText.setString("Place ships on the board.");
+			}
+			if(m_mode == Mode::ATTACK)
+			{
+				if(m_turn == Turn::HUMAN)
+				{
+					if(m_selectCell)
+					{
+						std::pair<char, char> label {m_attackGrid.getSymbols(m_selectCell->getIndex())};
+						m_messageText.setString(" You selected: ", label.first, label.second);
+					}
+					else
+					{
+						m_messageText.setString("Choose a spot to shoot!");
+					}
+				}
+				if(m_turn == Turn::OPPONENT)
+				{
+					m_messageText.setString("Opponent's turn.");
+				}
+			}
 		}
 
 
 	public:
 		Simulation() :
-			m_attackGrid{2, 2, g_boardcount, g_boardcount},
-			m_defenseGrid{2, 14, g_boardcount, g_boardcount},
-			m_placeGrid{14, 14, 6, 10},
-			m_humanPointsText{itoc(sf::Vector2i{14, 14})}, m_opponentPointsText{itoc(sf::Vector2i{14, 15})},
-			m_turn{Turn::NONE}, m_mode{Mode::PLACE},
+			m_attackGrid{2, 4, g_boardcount, g_boardcount},
+			m_defenseGrid{2, 16, g_boardcount, g_boardcount},
+			m_placeGrid{14, 16, 6, 10},
 			m_human{&m_attackGrid, &m_defenseGrid, &m_placeGrid},
 			m_opponent{&m_defenseGrid, &m_attackGrid, &m_placeGrid},
+			m_turn{Turn::NONE}, m_mode{Mode::PLACE},
 			m_selectShip{nullptr},
 			m_hoverCell{nullptr}, m_selectCell{nullptr},
-			m_confirmButton{14, 6, 6, 3}
+			m_confirmButton{14, 10, 6, 3},
+			m_humanPointsText{itof(sf::Vector2i{14, 5})},
+			m_opponentPointsText{itof(sf::Vector2i{14, 6})},
+			m_messageText{itof(sf::Vector2i{2, 1})}
 		{
-			m_humanPointsText.setString("Human: ", m_human.getPoints(), "/", 17);
 			m_humanPointsText.setFont(g_font);
-			m_humanPointsText.alignToCenterY();
-			m_humanPointsText.setFillColor(sf::Color::White);
-			m_opponentPointsText.setString("Computer: ", m_opponent.getPoints(), "/", 17);
 			m_opponentPointsText.setFont(g_font);
-			m_opponentPointsText.alignToCenterY();
+			m_messageText.setFont(g_font);
+
+			m_humanPointsText.setString("Human: ", m_human.getPoints(), "/", 17);
+			m_opponentPointsText.setString("Computer: ", m_opponent.getPoints(), "/", 17);
+			m_messageText.setString("Place ships on the board.");
+
+			m_humanPointsText.setFillColor(sf::Color::White);
 			m_opponentPointsText.setFillColor(sf::Color::White);
+			m_messageText.setFillColor(sf::Color::White);
 		}
 
 
@@ -200,6 +235,7 @@ class Simulation : public sf::Drawable
 						opponentShoot();
 				}
 			}
+			chooseMessage();
 		}
 
 		void hover(sf::Vector2f mouse)

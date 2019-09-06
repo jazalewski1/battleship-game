@@ -90,6 +90,8 @@ class LabelCell : public Cell
 			LabelCell{sf::Vector2i{indexX, indexY} ,symbol}
 		{
 		}
+
+		char getSymbol() const { return m_symbol; }
 };
 
 }

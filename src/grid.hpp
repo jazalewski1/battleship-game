@@ -96,6 +96,16 @@ class GridLabeled : public Grid
 		{
 		}
 
+		std::pair<char, char> getSymbols(sf::Vector2i index) const
+		{
+			auto searchX {m_labels.find(sf::Vector2i{index.x, m_offset.y - 1})};
+			auto searchY {m_labels.find(sf::Vector2i{m_offset.x - 1, index.y})};
+			if(searchX != m_labels.end() && searchY != m_labels.end())
+				return std::make_pair(searchX->second.getSymbol(), searchY->second.getSymbol());
+			else
+				return std::make_pair('?', '?');
+		}
+
 };
 
 }
