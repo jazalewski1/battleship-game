@@ -8,7 +8,9 @@
 #include "random.hpp"
 #include "ship.hpp"
 #include <iostream>
+#include <set>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 
@@ -20,11 +22,19 @@ namespace Game
 class Player : public sf::Drawable
 {
 	protected:
+		struct Shot
+		{
+			sf::Vector2i index = {0, 0};
+			bool hit = false;
+		};
+
+	protected:
 		std::vector<Ship> m_ships;
 		std::unordered_map<sf::Vector2i, Marker> m_markers;
 		const Grid* m_attackGrid;
 		const Grid* m_defenseGrid;
 		const Grid* m_placeGrid;
+		Shot m_lastShot;
 		int m_points;
 
 		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
@@ -76,9 +86,11 @@ class Player : public sf::Drawable
 		}
 		bool shootable(sf::Vector2i index) const { return m_markers.find(index) == m_markers.end(); }
 		bool shootable(sf::Vector2f pos) const { return m_markers.find(ftoi(pos)) == m_markers.end(); }
-		void markShot(sf::Vector2i index, bool isHit)
+		virtual void markShot(sf::Vector2i index, bool isHit)
 		{
 			m_markers.emplace(index, Marker{index, isHit});
+			m_lastShot.index = index;
+			m_lastShot.hit = isHit;
 
 			if(isHit)
 				++m_points;
@@ -154,6 +166,11 @@ class HumanPlayer : public Player
 class ComputerPlayer : public Player
 {
 	private:
+		std::unordered_set<sf::Vector2i> m_possibleShots;
+		std::set<int> m_shipsLeft;
+		sf::Vector2i m_lastHit;
+		bool m_onStreak;
+
 		int m_delayLimit;
 		int m_delayCounter;
 
@@ -171,10 +188,10 @@ class ComputerPlayer : public Player
 		{
 			sf::Vector2i start {m_placeGrid->getBounds().left, m_placeGrid->getBounds().top};
 			sf::IntRect bounds {m_defenseGrid->getBounds()};
-			int shipSize;
 			for(int i = 1; i <= 5; ++i)
 			{
-				shipSize = (i < 3 ? i + 1 : i);
+				int shipSize {(i < 3 ? i + 1 : i)};
+				m_shipsLeft.emplace(shipSize);
 
 				sf::Vector2i temp;
 				m_ships.push_back(Ship{start, shipSize});
@@ -191,28 +208,45 @@ class ComputerPlayer : public Player
 
 	public:
 		ComputerPlayer(const Grid* attackGrid, const Grid* defenseGrid, const Grid* placeGrid) :
-			Player{attackGrid, defenseGrid, placeGrid}
+			Player{attackGrid, defenseGrid, placeGrid},
+			m_onStreak{false}
 		{
 			fillShips();
+
+			sf::IntRect bounds {m_attackGrid->getBounds()};
+			for(int y = 0; y < bounds.height; ++y)
+			{
+				for(int x = 0; x < bounds.width; ++x)
+				{
+					m_possibleShots.emplace(x + bounds.left, y + bounds.top);
+				}
+			}
 		}
 
 		sf::Vector2i makeShot() const
 		{
-			// brain, deciding where the shot should be, based on markers, probable indexes etc.
-			// keep track of destroyed sizes, for that also count consecutive hit shots
-			// keep track of last shot, and direction (int unit vector)
-			// if last shot was hit, set some direction and follow it or not
-
-			sf::IntRect bounds {m_attackGrid->getBounds()};
 			sf::Vector2i index;
-			do
-			{
-				index.x = random::get(0, bounds.width - 1);
-				index.y = random::get(0, bounds.height - 1);
-				index += sf::Vector2i{bounds.left, bounds.top};
-			} while(!shootable(index));
 
-			return index;
+
+			// map<Dir, IntRect> -- a map of guesses for the next shot, contains
+
+			if(m_onStreak)
+			{
+
+			}
+			else
+			{
+
+			}
+
+			return *random::get(m_possibleShots);
+		}
+		void markShot(sf::Vector2i index, bool isHit) override
+		{
+			Player::markShot(index, isHit);
+
+			if(m_possibleShots.find(index) != m_possibleShots.end())
+				m_possibleShots.erase(index);
 		}
 
 		void startThinking()
