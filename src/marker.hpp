@@ -23,6 +23,7 @@ class Marker : public sf::Drawable
 		Marker(sf::Vector2i index, bool isHit) :
 			m_shape{g_cellsize * 0.3f}, m_index{index}, m_hit{isHit}
 		{
+			m_shape.setPointCount(16);
 			m_shape.setOrigin(m_shape.getRadius(), m_shape.getRadius());
 			m_pos = itoc(index);
 			m_shape.setPosition(m_pos);

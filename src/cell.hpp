@@ -33,12 +33,12 @@ class Cell : public sf::Drawable
 		Cell(sf::Vector2i index) :
 			m_shape{sf::Vector2f{g_cellsize, g_cellsize}}, m_size{g_cellsize, g_cellsize},
 			m_index{index}, m_pos{index.x * g_cellsize, index.y * g_cellsize}, m_center{itoc(index)},
-			m_defaultColor{sf::Color::Transparent}, m_hoverColor{255, 255, 255, 100}, m_selectColor{255, 255, 255, 180}
+			m_defaultColor{sf::Color::Transparent}, m_hoverColor{245, 242, 201, 100}, m_selectColor{245, 242, 201, 180}
 		{
 			m_shape.setPosition(m_pos);
 			m_shape.setFillColor(sf::Color::Transparent);
-			m_shape.setOutlineColor(sf::Color::White);
-			m_shape.setOutlineThickness(1.0f);
+			m_shape.setOutlineColor(sf::Color{245, 242, 201});
+			m_shape.setOutlineThickness(0.5f);
 		}
 		Cell(int indexX, int indexY) :
 			Cell{sf::Vector2i{indexX, indexY}}

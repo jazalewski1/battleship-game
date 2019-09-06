@@ -299,8 +299,11 @@ class Simulation : public sf::Drawable
 
 int main()
 {
-	sf::RenderWindow window {sf::VideoMode{g_winsize.x, g_winsize.y}, "Battleship Game"};
+	sf::ContextSettings settings;
+	settings.antialiasingLevel = 8;
+	sf::RenderWindow window {sf::VideoMode{g_winsize.x, g_winsize.y}, "Battleship Game", sf::Style::Default, settings};
 	window.setFramerateLimit(60);
+	sf::Color background {5, 20, 43};
 
 	if(!g_font.loadFromFile("content/consola.ttf"))
 		return EXIT_FAILURE;
@@ -348,7 +351,7 @@ int main()
 
 		sim.update();
 
-		window.clear();
+		window.clear(background);
 		window.draw(sim);
 		window.display();
 	}

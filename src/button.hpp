@@ -52,8 +52,8 @@ class Button : public sf::Drawable
 		Button(sf::Vector2i offset, sf::Vector2i size, bool active = false) :
 			m_shape{itof(size)}, m_offset{offset}, m_size{size},
 			m_isActive{active},
-			m_activeColor{83, 158, 24}, m_activeColorDetail{33, 108, 4},
-			m_unactiveColor{196, 196, 196}, m_unactiveColorDetail{146, 146, 146},
+			m_activeColor{83, 158, 24}, m_activeColorDetail{37, 71, 9},
+			m_unactiveColor{196, 196, 196}, m_unactiveColorDetail{94, 94, 94},
 			m_text{itoc(offset), "CONFIRM"}
 		{
 			m_shape.setPosition(itof(m_offset));
