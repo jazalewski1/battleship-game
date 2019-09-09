@@ -133,15 +133,11 @@ class Simulation : public sf::Drawable
 				m_humanPointsText.setString("Human: ", m_human.getPoints(), "/", 17);
 
 				m_selectCell->defaultColor();
-
-				m_opponent.startThinking();
-
-				if(m_selectCell)
-					m_selectCell->defaultColor();
-
 				m_selectCell = nullptr;
 
 				m_messageText.append((isHit ? " It's a hit!" : "It's a miss..."));
+
+				m_opponent.startThinking();
 				m_turn = Turn::OPPONENT;
 			}
 		}
@@ -252,7 +248,7 @@ class Simulation : public sf::Drawable
 			}
 		}
 
-		void press(sf::Vector2f mouse)
+		void lmbPress(sf::Vector2f mouse)
 		{
 			if(m_mode == Mode::PLACE)
 			{
@@ -276,6 +272,13 @@ class Simulation : public sf::Drawable
 					}
 				}
 				selectCell(mouse);
+			}
+		}
+		void rmbPress(sf::Vector2f mouse)
+		{
+			if(m_mode == Mode::ATTACK)
+			{
+				m_human.markGuess(ftoi(mouse));
 			}
 		}
 
@@ -329,7 +332,11 @@ int main()
 			{
 				if(event.mouseButton.button == sf::Mouse::Left)
 				{
-					sim.press(mouse);
+					sim.lmbPress(mouse);
+				}
+				if(event.mouseButton.button == sf::Mouse::Right)
+				{
+					sim.rmbPress(mouse);
 				}
 			}
 

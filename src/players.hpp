@@ -90,9 +90,15 @@ class Player : public sf::Drawable
 		}
 		bool shootable(sf::Vector2i index) const { return m_possibleShots.find(index) != m_possibleShots.end(); }
 		bool shootable(sf::Vector2f pos) const { return shootable(ftoi(pos)); }
+
 		virtual void markShot(sf::Vector2i index, bool isHit)
 		{
-			m_markers.emplace(index, Marker{index, isHit});
+			Marker::Type type {(isHit ? Marker::Type::HIT : Marker::Type::MISS)};
+			auto search {m_markers.find(index)};
+			if(search != m_markers.end())
+				search->second.setType(type);
+			else
+				m_markers.emplace(index, Marker{index, type});
 
 			if(m_possibleShots.find(index) != m_possibleShots.end())
 				m_possibleShots.erase(index);
@@ -164,6 +170,20 @@ class HumanPlayer : public Player
 					return false;
 			}
 			return true;
+		}
+
+		void markGuess(sf::Vector2i index)
+		{
+			auto search {m_markers.find(index)};
+			if(search != m_markers.end())
+			{
+				if(search->second.isGuess())
+					m_markers.erase(search);
+			}
+			else
+			{
+				m_markers.emplace(index, Marker{index, Marker::Type::GUESS});
+			}
 		}
 };
 
