@@ -222,6 +222,37 @@ class ComputerPlayer : public Player
 			}
 		}
 
+		void updateFoundShip()
+		{
+			sf::Vector2i index {m_lastShot.index};
+			if(!m_foundOrigin)
+			{
+				m_foundShip = sf::IntRect{index.x, index.y, 1, 1};
+			}
+			else
+			{
+				m_foundShip.left = (index.x < m_foundShip.left ? index.x : m_foundShip.left);
+				m_foundShip.top = (index.y < m_foundShip.top ? index.y : m_foundShip.top);
+				if(m_direction == Dir::R || m_direction == Dir::L)
+					++m_foundShip.width;
+				if(m_direction == Dir::U || m_direction == Dir::D)
+					++m_foundShip.height;
+			}
+		}
+		void updatePossibleShots()
+		{
+			sf::IntRect rect {m_foundShip};
+			for(int y = 0; y < rect.height + 2; ++y)
+			{
+				for(int x = 0; x < rect.width + 2; ++x)
+				{
+					sf::Vector2i index {rect.left - 1 + x, rect.top - 1 + y};
+					if(m_possibleShots.find(index) != m_possibleShots.end())
+						m_possibleShots.erase(index);
+				}
+			}
+		}
+
 		void setDirection(Dir d)
 		{
 			m_direction = d;
@@ -234,7 +265,7 @@ class ComputerPlayer : public Player
 				default: break;
 			}
 		}
-		void rotateDiff()
+		void rotateDirection()
 		{
 			switch(m_direction)
 			{
@@ -245,7 +276,7 @@ class ComputerPlayer : public Player
 				default: break;
 			}
 		}
-		void reverseDiff()
+		void reverseDirection()
 		{
 			switch(m_direction)
 			{
@@ -280,7 +311,7 @@ class ComputerPlayer : public Player
 					sf::Vector2i index {m_origin + m_diff};
 					while(!shootable(index))
 					{
-						rotateDiff();
+						rotateDirection();
 						index = m_origin + m_diff;
 					}
 					return index;
@@ -295,11 +326,11 @@ class ComputerPlayer : public Player
 			{
 				if(!m_lastShot.hit)
 				{
-					rotateDiff();
+					rotateDirection();
 					sf::Vector2i index {m_origin + m_diff};
 					while(!shootable(index))
 					{
-						rotateDiff();
+						rotateDirection();
 						index = m_origin + m_diff;
 					}
 					return index;
@@ -315,7 +346,7 @@ class ComputerPlayer : public Player
 						if(!m_attackGrid->contains(index))
 						{
 							m_foundEnd1 = true;
-							reverseDiff();
+							reverseDirection();
 							test = false;
 						}
 						else
@@ -330,7 +361,7 @@ class ComputerPlayer : public Player
 								else
 								{
 									m_foundEnd1 = true;
-									reverseDiff();
+									reverseDirection();
 									test = false;
 								}
 							}
@@ -355,7 +386,7 @@ class ComputerPlayer : public Player
 							if(!m_attackGrid->contains(index))
 							{
 								m_foundEnd1 = true;
-								reverseDiff();
+								reverseDirection();
 								test = false;
 							}
 							else
@@ -370,7 +401,7 @@ class ComputerPlayer : public Player
 									else
 									{
 										m_foundEnd1 = true;
-										reverseDiff();
+										reverseDirection();
 										test = false;
 									}
 								}
@@ -384,7 +415,7 @@ class ComputerPlayer : public Player
 					else
 					{
 						m_foundEnd1 = true;
-						reverseDiff();
+						reverseDirection();
 
 						sf::Vector2i index {m_lastShot.index + m_diff};
 						bool test {true};
@@ -468,18 +499,23 @@ class ComputerPlayer : public Player
 
 					setDirection(Dir::U);
 
+					updatePossibleShots();
+					m_foundShip = sf::IntRect{0, 0, 0, 0};
+
 					return *random::get(m_possibleShots);
 				}
 			}
+			return *random::get(m_possibleShots);
 		}
 		void markShot(sf::Vector2i index, bool isHit) override
 		{
 			Player::markShot(index, isHit);
 
-
-
 			m_lastShot.index = index;
 			m_lastShot.hit = isHit;
+
+			if(isHit && !m_foundEnd2)
+				updateFoundShip();
 		}
 
 		void startThinking()
