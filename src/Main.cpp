@@ -115,7 +115,7 @@ class Simulation : public sf::Drawable
 				m_selectCell->defaultColor();
 				m_selectCell = nullptr;
 			}
-			if(m_attackGrid.contains(mouse) && m_human.shootable(mouse))
+			if(m_human.shootable(mouse))
 			{
 				m_selectCell = m_attackGrid.getCell(mouse);
 				if(m_selectCell)

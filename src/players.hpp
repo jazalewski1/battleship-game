@@ -7,6 +7,7 @@
 #include "marker.hpp"
 #include "random.hpp"
 #include "ship.hpp"
+#include <algorithm>
 #include <iostream>
 #include <set>
 #include <unordered_map>
@@ -21,31 +22,34 @@ namespace Game
 {
 class Player : public sf::Drawable
 {
-	protected:
-		struct Shot
-		{
-			sf::Vector2i index = {0, 0};
-			bool hit = false;
-		};
 
 	protected:
 		std::vector<Ship> m_ships;
+
 		std::unordered_map<sf::Vector2i, Marker> m_markers;
+		std::unordered_set<sf::Vector2i> m_possibleShots;
+
 		const Grid* m_attackGrid;
 		const Grid* m_defenseGrid;
 		const Grid* m_placeGrid;
-		Shot m_lastShot;
 		int m_points;
 
 		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
 		virtual void fillShips() = 0;
-
 
 	public:
 		Player(const Grid* attackGrid, const Grid* defenseGrid, const Grid* placeGrid) :
 			m_attackGrid{attackGrid}, m_defenseGrid{defenseGrid}, m_placeGrid{placeGrid},
 			m_points{0}
 		{
+			sf::IntRect bounds {m_attackGrid->getBounds()};
+			for(int y = 0; y < bounds.height; ++y)
+			{
+				for(int x = 0; x < bounds.width; ++x)
+				{
+					m_possibleShots.emplace(x + bounds.left, y + bounds.top);
+				}
+			}
 		}
 
 		bool isShip(sf::Vector2i index) const
@@ -84,13 +88,14 @@ class Player : public sf::Drawable
 			}
 			return true;
 		}
-		bool shootable(sf::Vector2i index) const { return m_markers.find(index) == m_markers.end(); }
-		bool shootable(sf::Vector2f pos) const { return m_markers.find(ftoi(pos)) == m_markers.end(); }
+		bool shootable(sf::Vector2i index) const { return m_possibleShots.find(index) != m_possibleShots.end(); }
+		bool shootable(sf::Vector2f pos) const { return shootable(ftoi(pos)); }
 		virtual void markShot(sf::Vector2i index, bool isHit)
 		{
 			m_markers.emplace(index, Marker{index, isHit});
-			m_lastShot.index = index;
-			m_lastShot.hit = isHit;
+
+			if(m_possibleShots.find(index) != m_possibleShots.end())
+				m_possibleShots.erase(index);
 
 			if(isHit)
 				++m_points;
@@ -166,10 +171,25 @@ class HumanPlayer : public Player
 class ComputerPlayer : public Player
 {
 	private:
-		std::unordered_set<sf::Vector2i> m_possibleShots;
-		std::set<int> m_shipsLeft;
-		sf::Vector2i m_lastHit;
-		bool m_onStreak;
+		struct Shot
+		{
+			sf::Vector2i index;
+			bool hit;
+			Shot() : index{0, 0}, hit{false} {}
+		};
+		enum class Dir {U, R, D, L};
+
+	private:
+		Shot m_lastShot;
+		sf::Vector2i m_origin;
+		Dir m_direction;
+		sf::Vector2i m_diff;
+		int m_hitCounter;
+		bool m_foundOrigin;
+		bool m_foundPlane;
+		bool m_foundEnd1;
+		bool m_foundEnd2;
+		sf::IntRect m_foundShip;
 
 		int m_delayLimit;
 		int m_delayCounter;
@@ -191,67 +211,281 @@ class ComputerPlayer : public Player
 			for(int i = 1; i <= 5; ++i)
 			{
 				int shipSize {(i < 3 ? i + 1 : i)};
-				m_shipsLeft.emplace(shipSize);
-
-				sf::Vector2i temp;
 				m_ships.push_back(Ship{start, shipSize});
 				do
 				{
 					if(random::get(0, 100) < 50)
 						m_ships.back().rotate();
 					sf::Vector2i offset {random::get(bounds.left, bounds.left + bounds.width), random::get(bounds.top, bounds.top + bounds.height)};
-					temp = offset;
 					m_ships.back().setOffset(offset);
 				} while(!placeable(&m_ships.back()));
 			}
 		}
 
+		void setDirection(Dir d)
+		{
+			m_direction = d;
+			switch(d)
+			{
+				case Dir::U: m_diff = sf::Vector2i{0, -1}; break;
+				case Dir::R: m_diff = sf::Vector2i{1, 0}; break;
+				case Dir::D: m_diff = sf::Vector2i{0, 1}; break;
+				case Dir::L: m_diff = sf::Vector2i{-1, 0}; break;
+				default: break;
+			}
+		}
+		void rotateDiff()
+		{
+			switch(m_direction)
+			{
+				case Dir::U: setDirection(Dir::R); break;
+				case Dir::R: setDirection(Dir::D); break;
+				case Dir::D: setDirection(Dir::L); break;
+				case Dir::L: setDirection(Dir::U); break;
+				default: break;
+			}
+		}
+		void reverseDiff()
+		{
+			switch(m_direction)
+			{
+				case Dir::U: setDirection(Dir::D); break;
+				case Dir::R: setDirection(Dir::L); break;
+				case Dir::D: setDirection(Dir::U); break;
+				case Dir::L: setDirection(Dir::R); break;
+				default: break;
+			}
+		}
+		bool isHit(sf::Vector2i index) const { return m_markers.at(index).isHit(); }
+
 	public:
 		ComputerPlayer(const Grid* attackGrid, const Grid* defenseGrid, const Grid* placeGrid) :
 			Player{attackGrid, defenseGrid, placeGrid},
-			m_onStreak{false}
+			m_direction{Dir::U}, m_diff{0, -1}, m_hitCounter {0},
+			m_foundOrigin{false}, m_foundPlane{false}, m_foundEnd1{false}, m_foundEnd2{false}
 		{
 			fillShips();
-
-			sf::IntRect bounds {m_attackGrid->getBounds()};
-			for(int y = 0; y < bounds.height; ++y)
-			{
-				for(int x = 0; x < bounds.width; ++x)
-				{
-					m_possibleShots.emplace(x + bounds.left, y + bounds.top);
-				}
-			}
 		}
 
-		sf::Vector2i makeShot() const
+		sf::Vector2i makeShot()
 		{
-			sf::Vector2i index;
-
-
-			// map<Dir, IntRect> -- a map of guesses for the next shot, contains
-
-			if(m_onStreak)
+			if(!m_foundOrigin && !m_foundPlane)
 			{
+				if(m_lastShot.hit)
+				{
+					m_foundOrigin = true;
+					m_origin = m_lastShot.index;
+					++m_hitCounter;
 
+					sf::Vector2i index {m_origin + m_diff};
+					while(!shootable(index))
+					{
+						rotateDiff();
+						index = m_origin + m_diff;
+					}
+					return index;
+				}
+				else
+				{
+					return *random::get(m_possibleShots);
+				}
 			}
-			else
+
+			if(m_foundOrigin && !m_foundPlane)
 			{
+				if(!m_lastShot.hit)
+				{
+					rotateDiff();
+					sf::Vector2i index {m_origin + m_diff};
+					while(!shootable(index))
+					{
+						rotateDiff();
+						index = m_origin + m_diff;
+					}
+					return index;
+				}
+				else
+				{
+					m_foundPlane = true;
 
+					sf::Vector2i index {m_lastShot.index + m_diff};
+					bool test {true};
+					while(test)
+					{
+						if(!m_attackGrid->contains(index))
+						{
+							m_foundEnd1 = true;
+							reverseDiff();
+							test = false;
+						}
+						else
+						{
+							auto markerItr {m_markers.find(index)};
+							if(markerItr != m_markers.end())
+							{
+								if(markerItr->second.isHit())
+								{
+									index = index + m_diff;
+								}
+								else
+								{
+									m_foundEnd1 = true;
+									reverseDiff();
+									test = false;
+								}
+							}
+							else
+							{
+								return index;
+							}
+						}
+					}
+				}
 			}
+			if(m_foundOrigin && m_foundPlane)
+			{
+				if(!m_foundEnd1 && !m_foundEnd2)
+				{
+					if(m_lastShot.hit)
+					{
+						sf::Vector2i index {m_lastShot.index + m_diff};
+						bool test {true};
+						while(test)
+						{
+							if(!m_attackGrid->contains(index))
+							{
+								m_foundEnd1 = true;
+								reverseDiff();
+								test = false;
+							}
+							else
+							{
+								auto markerItr {m_markers.find(index)};
+								if(markerItr != m_markers.end())
+								{
+									if(markerItr->second.isHit())
+									{
+										index = index + m_diff;
+									}
+									else
+									{
+										m_foundEnd1 = true;
+										reverseDiff();
+										test = false;
+									}
+								}
+								else
+								{
+									return index;
+								}
+							}
+						}
+					}
+					else
+					{
+						m_foundEnd1 = true;
+						reverseDiff();
 
-			return *random::get(m_possibleShots);
+						sf::Vector2i index {m_lastShot.index + m_diff};
+						bool test {true};
+						while(test)
+						{
+							if(!m_attackGrid->contains(index))
+							{
+								m_foundEnd2 = true;
+								test = false;
+							}
+							else
+							{
+								auto markerItr {m_markers.find(index)};
+								if(markerItr != m_markers.end())
+								{
+									if(markerItr->second.isHit())
+									{
+										index = index + m_diff;
+									}
+									else
+									{
+										m_foundEnd2 = true;
+										test = false;
+									}
+								}
+								else
+								{
+									return index;
+								}
+							}
+						}
+					}
+				}
+				if(m_foundEnd1 && !m_foundEnd2)
+				{
+					if(m_lastShot.hit)
+					{
+						sf::Vector2i index {m_lastShot.index + m_diff};
+						bool test {true};
+						while(test)
+						{
+							if(!m_attackGrid->contains(index))
+							{
+								m_foundEnd2 = true;
+								test = false;
+							}
+							else
+							{
+								auto markerItr {m_markers.find(index)};
+								if(markerItr != m_markers.end())
+								{
+									if(markerItr->second.isHit())
+									{
+										index = index + m_diff;
+									}
+									else
+									{
+										m_foundEnd2 = true;
+										test = false;
+									}
+								}
+								else
+								{
+									return index;
+								}
+							}
+						}
+					}
+					else
+					{
+						m_foundEnd2 = true;
+					}
+				}
+				if(m_foundEnd1 && m_foundEnd2)
+				{
+					m_foundOrigin = false;
+					m_foundPlane = false;
+					m_foundEnd1 = false;
+					m_foundEnd2 = false;
+					m_hitCounter = 0;
+
+					setDirection(Dir::U);
+
+					return *random::get(m_possibleShots);
+				}
+			}
 		}
 		void markShot(sf::Vector2i index, bool isHit) override
 		{
 			Player::markShot(index, isHit);
 
-			if(m_possibleShots.find(index) != m_possibleShots.end())
-				m_possibleShots.erase(index);
+
+
+			m_lastShot.index = index;
+			m_lastShot.hit = isHit;
 		}
 
 		void startThinking()
 		{
 			m_delayLimit = random::get(20, 90);
+			m_delayLimit = 0;
 			m_delayCounter = 0;
 		}
 		void think() { ++m_delayCounter; }

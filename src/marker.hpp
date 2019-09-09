@@ -30,6 +30,8 @@ class Marker : public sf::Drawable
 			sf::Color color {m_hit ? sf::Color::Red : sf::Color::White};
 			m_shape.setFillColor(color);
 		}
+
+		bool isHit() const { return m_hit; }
 };
 
 
