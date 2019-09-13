@@ -174,15 +174,16 @@ class HumanPlayer : public Player
 
 		void markGuess(sf::Vector2i index)
 		{
-			auto search {m_markers.find(index)};
-			if(search != m_markers.end())
+			if(m_attackGrid->contains(index))
 			{
-				if(search->second.isGuess())
-					m_markers.erase(search);
-			}
-			else
-			{
-				m_markers.emplace(index, Marker{index, Marker::Type::GUESS});
+				auto search {m_markers.find(index)};
+				if(search != m_markers.end())
+				{
+					if(search->second.isGuess())
+						m_markers.erase(search);
+				}
+				else
+					m_markers.emplace(index, Marker{index, Marker::Type::GUESS});
 			}
 		}
 };
@@ -204,7 +205,6 @@ class ComputerPlayer : public Player
 		sf::Vector2i m_origin;
 		Dir m_direction;
 		sf::Vector2i m_diff;
-		int m_hitCounter;
 		bool m_foundOrigin;
 		bool m_foundPlane;
 		bool m_foundEnd1;
@@ -312,10 +312,10 @@ class ComputerPlayer : public Player
 	public:
 		ComputerPlayer(const Grid* attackGrid, const Grid* defenseGrid, const Grid* placeGrid) :
 			Player{attackGrid, defenseGrid, placeGrid},
-			m_direction{Dir::U}, m_diff{0, -1}, m_hitCounter {0},
 			m_foundOrigin{false}, m_foundPlane{false}, m_foundEnd1{false}, m_foundEnd2{false}
 		{
 			fillShips();
+			setDirection(static_cast<Dir>(random::get(0, 3)));
 		}
 
 		sf::Vector2i makeShot()
@@ -326,7 +326,6 @@ class ComputerPlayer : public Player
 				{
 					m_foundOrigin = true;
 					m_origin = m_lastShot.index;
-					++m_hitCounter;
 
 					sf::Vector2i index {m_origin + m_diff};
 					while(!shootable(index))
@@ -515,9 +514,8 @@ class ComputerPlayer : public Player
 					m_foundPlane = false;
 					m_foundEnd1 = false;
 					m_foundEnd2 = false;
-					m_hitCounter = 0;
 
-					setDirection(Dir::U);
+					setDirection(static_cast<Dir>(random::get(0, 3)));
 
 					updatePossibleShots();
 					m_foundShip = sf::IntRect{0, 0, 0, 0};

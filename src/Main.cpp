@@ -4,10 +4,12 @@
 #include "sfutils.hpp"
 
 #include "button.hpp"
+#include "endscreen.hpp"
 #include "grid.hpp"
 #include "players.hpp"
 
 #include <iostream>
+#include <memory>
 
 
 
@@ -30,7 +32,7 @@ class Simulation : public sf::Drawable
 {
 	private:
 		enum class Turn {HUMAN, OPPONENT, NONE};
-		enum class Mode {PLACE, ATTACK, NONE};
+		enum class Mode {PLACE, ATTACK, FINISH, NONE};
 
 	private:
 		GridLabeled m_attackGrid;
@@ -52,6 +54,8 @@ class Simulation : public sf::Drawable
 		Gui::Text m_humanPointsText;
 		Gui::Text m_opponentPointsText;
 		Gui::Text m_messageText;
+		EndScreen m_endscreen;
+		bool m_doReset;
 
 	private:
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -62,7 +66,7 @@ class Simulation : public sf::Drawable
 			{
 				target.draw(m_placeGrid, states);
 			}
-			if(m_mode == Mode::ATTACK)
+			if(m_mode == Mode::ATTACK || m_mode == Mode::FINISH)
 			{
 				target.draw(m_humanPointsText);
 				target.draw(m_opponentPointsText);
@@ -73,6 +77,11 @@ class Simulation : public sf::Drawable
 
 			target.draw(m_human);
 			target.draw(m_opponent);
+
+			if(m_mode == Mode::FINISH)
+			{
+				target.draw(m_endscreen);
+			}
 		}
 
 		void selectShip(sf::Vector2f mouse)
@@ -130,12 +139,14 @@ class Simulation : public sf::Drawable
 				bool isHit {m_opponent.isShip(index)};
 				m_human.markShot(index, isHit);
 
-				m_humanPointsText.setString("Human: ", m_human.getPoints(), "/", 17);
-
 				m_selectCell->defaultColor();
 				m_selectCell = nullptr;
 
-				m_messageText.append((isHit ? " It's a hit!" : "It's a miss..."));
+				m_humanPointsText.setString("  Human: ", m_human.getPoints(), "/", 17);
+				m_messageText.append((isHit ? " It's a hit!" : " It's a miss..."));
+
+				if(m_human.getPoints() >= 17)
+					m_mode = Mode::FINISH;
 
 				m_opponent.startThinking();
 				m_turn = Turn::OPPONENT;
@@ -147,8 +158,11 @@ class Simulation : public sf::Drawable
 			bool isHit {m_human.isShip(shot)};
 			m_opponent.markShot(shot, isHit);
 
-			m_messageText.append((isHit ? " It's a hit!" : "It's a miss."));
+			m_messageText.append((isHit ? " It's a hit!" : " It's a miss."));
 			m_opponentPointsText.setString("Computer: ", m_opponent.getPoints(), "/", 17);
+
+			if(m_opponent.getPoints() >= 17)
+				m_mode = Mode::FINISH;
 
 			m_turn = Turn::HUMAN;
 		}
@@ -177,6 +191,19 @@ class Simulation : public sf::Drawable
 					m_messageText.setString("Opponent's turn.");
 				}
 			}
+			if(m_mode == Mode::FINISH)
+			{
+				if(m_human.getPoints() > m_opponent.getPoints())
+				{
+					m_messageText.setString("Finish! You win!");
+					m_endscreen.setScreen(true);
+				}
+				else
+				{
+					m_messageText.setString("Finish! You lose...");
+					m_endscreen.setScreen(false);
+				}
+			}
 		}
 
 
@@ -193,7 +220,8 @@ class Simulation : public sf::Drawable
 			m_confirmButton{14, 10, 6, 3},
 			m_humanPointsText{itof(sf::Vector2i{14, 5})},
 			m_opponentPointsText{itof(sf::Vector2i{14, 6})},
-			m_messageText{itof(sf::Vector2i{2, 1})}
+			m_messageText{itof(sf::Vector2i{2, 1})},
+			m_endscreen{}, m_doReset{false}
 		{
 			m_humanPointsText.setFont(g_font);
 			m_opponentPointsText.setFont(g_font);
@@ -215,7 +243,6 @@ class Simulation : public sf::Drawable
 			{
 				m_confirmButton.setActive(m_human.isReady() && !m_selectShip);
 			}
-
 			if(m_mode == Mode::ATTACK)
 			{
 				if(m_turn == Turn::HUMAN)
@@ -230,6 +257,17 @@ class Simulation : public sf::Drawable
 					if(!m_opponent.isThinking())
 						opponentShoot();
 				}
+			}
+			if(m_mode == Mode::FINISH)
+			{
+				m_confirmButton.setActive(false);
+
+				if(m_hoverCell)
+					m_hoverCell->defaultColor();
+				m_hoverCell = nullptr;
+				if(m_selectCell)
+					m_selectCell->defaultColor();
+				m_selectCell = nullptr;
 			}
 			chooseMessage();
 		}
@@ -273,6 +311,11 @@ class Simulation : public sf::Drawable
 				}
 				selectCell(mouse);
 			}
+			if(m_mode == Mode::FINISH)
+			{
+				if(m_endscreen.buttonPressed(mouse))
+					m_doReset = true;
+			}
 		}
 		void rmbPress(sf::Vector2f mouse)
 		{
@@ -294,6 +337,8 @@ class Simulation : public sf::Drawable
 				humanShoot();
 			}
 		}
+
+		bool doReset() const { return m_doReset; }
 };
 
 }
@@ -312,7 +357,7 @@ int main()
 		return EXIT_FAILURE;
 
 
-	Game::Simulation sim;
+	std::unique_ptr<Game::Simulation> simulation {std::make_unique<Game::Simulation>()};
 
 	while(window.isOpen())
 	{
@@ -332,11 +377,14 @@ int main()
 			{
 				if(event.mouseButton.button == sf::Mouse::Left)
 				{
-					sim.lmbPress(mouse);
+					simulation->lmbPress(mouse);
+
+					if(simulation->doReset())
+						simulation = std::make_unique<Game::Simulation>();
 				}
 				if(event.mouseButton.button == sf::Mouse::Right)
 				{
-					sim.rmbPress(mouse);
+					simulation->rmbPress(mouse);
 				}
 			}
 
@@ -344,7 +392,7 @@ int main()
 			{
 				if(event.key.code == sf::Keyboard::Space)
 				{
-					sim.spacebar();
+					simulation->spacebar();
 				}
 				if(event.key.code == sf::Keyboard::Escape)
 				{
@@ -354,12 +402,11 @@ int main()
 			}
 		}
 
-		sim.hover(mouse);
-
-		sim.update();
+		simulation->hover(mouse);
+		simulation->update();
 
 		window.clear(background);
-		window.draw(sim);
+		window.draw(*simulation);
 		window.display();
 	}
 
