@@ -7,6 +7,7 @@
 #include "endscreen.hpp"
 #include "grid.hpp"
 #include "players.hpp"
+#include "particles.hpp"
 
 #include <iostream>
 #include <memory>
@@ -49,6 +50,9 @@ class Simulation : public sf::Drawable
 		Cell* m_hoverCell;
 		Cell* m_selectCell;
 
+		ParticleSystem::Emitter m_hitEmitter;
+		ParticleSystem::Emitter m_missEmitter;
+
 		Button m_confirmButton;
 
 		Gui::Text m_humanPointsText;
@@ -68,19 +72,22 @@ class Simulation : public sf::Drawable
 			}
 			if(m_mode == Mode::ATTACK || m_mode == Mode::FINISH)
 			{
-				target.draw(m_humanPointsText);
-				target.draw(m_opponentPointsText);
+				target.draw(m_humanPointsText, states);
+				target.draw(m_opponentPointsText, states);
 			}
-			target.draw(m_messageText);
+			target.draw(m_messageText, states);
 
-			target.draw(m_confirmButton);
+			target.draw(m_confirmButton, states);
 
-			target.draw(m_human);
-			target.draw(m_opponent);
+			target.draw(m_human, states);
+			target.draw(m_opponent, states);
+
+			target.draw(m_hitEmitter, states);
+			target.draw(m_missEmitter, states);
 
 			if(m_mode == Mode::FINISH)
 			{
-				target.draw(m_endscreen);
+				target.draw(m_endscreen, states);
 			}
 		}
 
@@ -145,6 +152,17 @@ class Simulation : public sf::Drawable
 				m_humanPointsText.setString("  Human: ", m_human.getPoints(), "/", 17);
 				m_messageText.append((isHit ? " It's a hit!" : " It's a miss..."));
 
+				if(isHit)
+				{
+					m_hitEmitter.setPosition(itoc(index));
+					m_hitEmitter.emit();
+				}
+				else
+				{
+					m_missEmitter.setPosition(itoc(index));
+					m_missEmitter.emit();
+				}
+
 				if(m_human.getPoints() >= 17)
 					m_mode = Mode::FINISH;
 
@@ -154,12 +172,23 @@ class Simulation : public sf::Drawable
 		}
 		void opponentShoot()
 		{
-			sf::Vector2i shot {m_opponent.makeShot()};
-			bool isHit {m_human.isShip(shot)};
-			m_opponent.markShot(shot, isHit);
+			sf::Vector2i index {m_opponent.makeShot()};
+			bool isHit {m_human.isShip(index)};
+			m_opponent.markShot(index, isHit);
 
 			m_messageText.append((isHit ? " It's a hit!" : " It's a miss."));
 			m_opponentPointsText.setString("Computer: ", m_opponent.getPoints(), "/", 17);
+
+			if(isHit)
+			{
+				m_hitEmitter.setPosition(itoc(index));
+				m_hitEmitter.emit();
+			}
+			else
+			{
+				m_missEmitter.setPosition(itoc(index));
+				m_missEmitter.emit();
+			}
 
 			if(m_opponent.getPoints() >= 17)
 				m_mode = Mode::FINISH;
@@ -217,12 +246,37 @@ class Simulation : public sf::Drawable
 			m_turn{Turn::NONE}, m_mode{Mode::PLACE},
 			m_selectShip{nullptr},
 			m_hoverCell{nullptr}, m_selectCell{nullptr},
+			m_hitEmitter{0.0f, 0.0f, 360.0f}, m_missEmitter{0.0f, 0.0f, 360.0f},
 			m_confirmButton{14, 10, 6, 3},
 			m_humanPointsText{itof(sf::Vector2i{14, 5})},
 			m_opponentPointsText{itof(sf::Vector2i{14, 6})},
 			m_messageText{itof(sf::Vector2i{2, 1})},
 			m_endscreen{}, m_doReset{false}
 		{
+			m_hitEmitter.setEmitSpan(360.0f);
+			m_hitEmitter.setEmitCount(100);
+			m_hitEmitter.setSpeed(0.4f, 1.0f);
+			m_hitEmitter.setRange(10.0f, 30.0f);
+			m_hitEmitter.setStartRadius(0.0f, 0.5f);
+			m_hitEmitter.setEndRadius(1.0f, 10.0f);
+			m_hitEmitter.addColor(sf::Color::White, 0.0f);
+			m_hitEmitter.addColor(sf::Color::Yellow, 0.2f);
+			m_hitEmitter.addColor(sf::Color::Red, 0.4f);
+			m_hitEmitter.addColor(sf::Color{20, 20, 20}, 0.6f);
+			m_hitEmitter.addColor(sf::Color{150, 150, 150}, 1.0f);
+
+			m_missEmitter.setEmitSpan(360.0f);
+			m_missEmitter.setEmitCount(100);
+			m_missEmitter.setSpeed(0.5f, 1.5f);
+			m_missEmitter.setRange(10.0f, 30.0f);
+			m_missEmitter.setStartRadius(0.0f, 1.0f);
+			m_missEmitter.setEndRadius(1.0f, 10.0f);
+			m_missEmitter.setFading(true);
+			m_missEmitter.addColor(sf::Color::White, 0.0f);
+			m_missEmitter.addColor(sf::Color{200, 200, 209}, 1.0f);
+
+
+
 			m_humanPointsText.setFont(g_font);
 			m_opponentPointsText.setFont(g_font);
 			m_messageText.setFont(g_font);
@@ -239,6 +293,9 @@ class Simulation : public sf::Drawable
 
 		void update()
 		{
+			m_hitEmitter.update();
+			m_missEmitter.update();
+
 			if(m_mode == Mode::PLACE)
 			{
 				m_confirmButton.setActive(m_human.isReady() && !m_selectShip);

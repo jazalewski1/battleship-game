@@ -312,7 +312,8 @@ class ComputerPlayer : public Player
 	public:
 		ComputerPlayer(const Grid* attackGrid, const Grid* defenseGrid, const Grid* placeGrid) :
 			Player{attackGrid, defenseGrid, placeGrid},
-			m_foundOrigin{false}, m_foundPlane{false}, m_foundEnd1{false}, m_foundEnd2{false}
+			m_foundOrigin{false}, m_foundPlane{false}, m_foundEnd1{false}, m_foundEnd2{false},
+			m_delayLimit{60}, m_delayCounter{0}
 		{
 			fillShips();
 			setDirection(static_cast<Dir>(random::get(0, 3)));
@@ -538,8 +539,7 @@ class ComputerPlayer : public Player
 
 		void startThinking()
 		{
-			m_delayLimit = random::get(20, 90);
-			m_delayLimit = 0;
+			m_delayLimit = random::get(20, 60);
 			m_delayCounter = 0;
 		}
 		void think() { ++m_delayCounter; }
