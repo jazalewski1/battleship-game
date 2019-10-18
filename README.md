@@ -1,2 +1,2 @@
-# Template SFML Project
-### empty
+# Battleship Game
+### C++ SFML Project
