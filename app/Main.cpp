@@ -1,13 +1,13 @@
 #include "SFML/Graphics.hpp"
-#include "common.hpp"
-#include "sfline.hpp"
-#include "sfutils.hpp"
+#include "Common.hpp"
+#include "Sfline.hpp"
+#include "Sfutils.hpp"
 
-#include "button.hpp"
-#include "endscreen.hpp"
-#include "grid.hpp"
-#include "players.hpp"
-#include "particles.hpp"
+#include "Button.hpp"
+#include "Endscreen.hpp"
+#include "Grid.hpp"
+#include "Players.hpp"
+#include "Particles.hpp"
 
 #include <iostream>
 #include <memory>

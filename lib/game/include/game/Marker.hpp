@@ -2,7 +2,7 @@
 #define MARKER_HPP
 
 #include "SFML/Graphics.hpp"
-#include "common.hpp"
+#include "Common.hpp"
 
 
 class Marker : public sf::Drawable

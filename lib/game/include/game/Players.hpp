@@ -2,11 +2,11 @@
 #define PLAYERS_HPP
 
 #include "SFML/Graphics.hpp"
-#include "common.hpp"
-#include "grid.hpp"
-#include "marker.hpp"
-#include "random.hpp"
-#include "ship.hpp"
+#include "Common.hpp"
+#include "Grid.hpp"
+#include "Marker.hpp"
+#include "Random.hpp"
+#include "Ship.hpp"
 #include <algorithm>
 #include <iostream>
 #include <set>

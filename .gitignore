@@ -1,4 +1,8 @@
-*
-!*.cpp
-!*.hpp
-!*.h
+# Build directory
+build
+
+# Binaries directory
+bin
+
+# VS Code project files
+.vscode

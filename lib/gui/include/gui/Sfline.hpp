@@ -2,7 +2,7 @@
 #define SFLINE_HPP
 
 #include "SFML/Graphics.hpp"
-#include "sfutils.hpp"
+#include "Sfutils.hpp"
 #include <cmath>
 
 const float LinePi {3.14159265359};
