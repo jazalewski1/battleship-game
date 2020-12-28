@@ -6,3 +6,6 @@ bin
 
 # VS Code project files
 .vscode
+
+# Helper scripts
+scripts

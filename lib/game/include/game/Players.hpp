@@ -2,11 +2,11 @@
 #define PLAYERS_HPP
 
 #include "SFML/Graphics.hpp"
-#include "Common.hpp"
-#include "Grid.hpp"
-#include "Marker.hpp"
-#include "Random.hpp"
-#include "Ship.hpp"
+#include "common/Common.hpp"
+#include "game/Grid.hpp"
+#include "game/Marker.hpp"
+#include "util/Random.hpp"
+#include "game/Ship.hpp"
 #include <algorithm>
 #include <iostream>
 #include <set>
@@ -15,11 +15,12 @@
 #include <vector>
 
 
-using random = effolkronium::random_static;
 
 
 namespace Game
 {
+using random_static = effolkronium::random_static;
+
 class Player : public sf::Drawable
 {
 
@@ -234,9 +235,9 @@ class ComputerPlayer : public Player
 				m_ships.push_back(Ship{start, shipSize});
 				do
 				{
-					if(random::get(0, 100) < 50)
+					if(random_static::get(0, 100) < 50)
 						m_ships.back().rotate();
-					sf::Vector2i offset {random::get(bounds.left, bounds.left + bounds.width), random::get(bounds.top, bounds.top + bounds.height)};
+					sf::Vector2i offset {random_static::get(bounds.left, bounds.left + bounds.width), random_static::get(bounds.top, bounds.top + bounds.height)};
 					m_ships.back().setOffset(offset);
 				} while(!placeable(&m_ships.back()));
 			}
@@ -316,7 +317,7 @@ class ComputerPlayer : public Player
 			m_delayLimit{60}, m_delayCounter{0}
 		{
 			fillShips();
-			setDirection(static_cast<Dir>(random::get(0, 3)));
+			setDirection(static_cast<Dir>(random_static::get(0, 3)));
 		}
 
 		sf::Vector2i makeShot()
@@ -338,7 +339,7 @@ class ComputerPlayer : public Player
 				}
 				else
 				{
-					return *random::get(m_possibleShots);
+					return *random_static::get(m_possibleShots);
 				}
 			}
 
@@ -516,15 +517,15 @@ class ComputerPlayer : public Player
 					m_foundEnd1 = false;
 					m_foundEnd2 = false;
 
-					setDirection(static_cast<Dir>(random::get(0, 3)));
+					setDirection(static_cast<Dir>(random_static::get(0, 3)));
 
 					updatePossibleShots();
 					m_foundShip = sf::IntRect{0, 0, 0, 0};
 
-					return *random::get(m_possibleShots);
+					return *random_static::get(m_possibleShots);
 				}
 			}
-			return *random::get(m_possibleShots);
+			return *random_static::get(m_possibleShots);
 		}
 		void markShot(sf::Vector2i index, bool isHit) override
 		{
@@ -539,7 +540,7 @@ class ComputerPlayer : public Player
 
 		void startThinking()
 		{
-			m_delayLimit = random::get(20, 60);
+			m_delayLimit = random_static::get(20, 60);
 			m_delayCounter = 0;
 		}
 		void think() { ++m_delayCounter; }

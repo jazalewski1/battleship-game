@@ -24,3 +24,10 @@ target_include_directories(
 	Utilities
 	PUBLIC include
 )
+
+target_link_libraries(
+	Utilities
+	sfml-graphics
+	sfml-window
+	sfml-system
+)

@@ -5,7 +5,6 @@ set(
 	include/game/Marker.hpp
 	include/game/Players.hpp
 	include/game/Grid.hpp
-	include/game/Common.hpp
 )
 
 set(
@@ -27,4 +26,13 @@ set_target_properties(
 target_include_directories(
 	Game
 	PUBLIC include
+)
+
+target_link_libraries(
+	Game
+	Common
+	Utilities
+	sfml-graphics
+	sfml-window
+	sfml-system
 )

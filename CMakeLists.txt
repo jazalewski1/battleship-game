@@ -17,12 +17,14 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
 add_executable(Battleship app/Main.cpp)
 
+add_subdirectory(${PROJECT_SOURCE_DIR}/lib/common)
 add_subdirectory(${PROJECT_SOURCE_DIR}/lib/game)
 add_subdirectory(${PROJECT_SOURCE_DIR}/lib/gui)
 add_subdirectory(${PROJECT_SOURCE_DIR}/lib/util)
 
 target_link_libraries(
 	Battleship
+	Common
 	Game
 	GUI
 	Utilities

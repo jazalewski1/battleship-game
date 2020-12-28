@@ -2,9 +2,9 @@
 #define ENDSCREEN_HPP
 
 #include "SFML/Graphics.hpp"
-#include "Button.hpp"
-#include "Common.hpp"
-#include "Guitext.hpp"
+#include "gui/Button.hpp"
+#include "common/Common.hpp"
+#include "gui/Guitext.hpp"
 
 namespace Game
 {

@@ -3,9 +3,9 @@
 
 
 #include "SFML/Graphics.hpp"
-#include "Common.hpp"
-#include "Cell.hpp"
-#include "Sfutils.hpp"
+#include "common/Common.hpp"
+#include "game/Cell.hpp"
+#include "util/Sfutils.hpp"
 #include <iostream>
 #include <unordered_map>
 

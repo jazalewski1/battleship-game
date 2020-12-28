@@ -1,10 +1,6 @@
 set(
 	HEADERS
-	include/gui/Button.hpp
-	include/gui/Guitext.hpp
-	include/gui/Particles.hpp
-	include/gui/Sfline.hpp
-	include/gui/Endscreen.hpp	
+	include/common/Common.hpp
 )
 
 set(
@@ -12,27 +8,23 @@ set(
 )
 
 add_library(
-	GUI
+	Common
 	${HEADERS}
 	${SOURCES}
 )
 
 set_target_properties(
-	GUI
+	Common
 	PROPERTIES
 	LINKER_LANGUAGE CXX
 )
 
 target_include_directories(
-	GUI
+	Common
 	PUBLIC include
 )
 
 target_link_libraries(
-	GUI
 	Common
-	Utilities
 	sfml-graphics
-	sfml-window
-	sfml-system
 )

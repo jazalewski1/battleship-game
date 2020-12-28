@@ -2,8 +2,8 @@
 #define PARTICLES_HPP
 
 #include "SFML/Graphics.hpp"
-#include "Random.hpp"
-#include "Sfutils.hpp"
+#include "util/Random.hpp"
+#include "util/Sfutils.hpp"
 #include <cmath>
 #include <iostream>
 #include <list>

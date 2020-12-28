@@ -3,8 +3,8 @@
 
 
 #include "SFML/Graphics.hpp"
-#include "Common.hpp"
-#include "Guitext.hpp"
+#include "common/Common.hpp"
+#include "gui/Guitext.hpp"
 
 namespace Game
 {

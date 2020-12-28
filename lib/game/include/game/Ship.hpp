@@ -2,7 +2,7 @@
 #define SHIP_HPP
 
 #include "SFML/Graphics.hpp"
-#include "Common.hpp"
+#include "common/Common.hpp"
 
 class Ship : public sf::Drawable
 {
