@@ -10,32 +10,13 @@
 #include <iostream>
 #include <memory>
 
-const sf::Vector2i g_cellcount{22, 28};
-const float g_cellsize{32};
-const sf::Vector2u g_winsize{static_cast<unsigned int>(g_cellcount.x * g_cellsize), static_cast<unsigned int>(g_cellcount.y *g_cellsize)};
-const int g_boardcount{10};
-sf::Font g_font;
-
-sf::Vector2i screen_position_to_index(sf::Vector2f pos)
-{
-	return sf::Vector2i{static_cast<int>(pos.x / g_cellsize), static_cast<int>(pos.y / g_cellsize)};
-}
-sf::Vector2f index_to_screen_position(sf::Vector2i index)
-{
-	return sf::Vector2f{index.x * g_cellsize, index.y * g_cellsize};
-}
-sf::Vector2f index_to_center_position(sf::Vector2i index)
-{
-	return sf::Vector2f{(index.x * g_cellsize) + (g_cellsize * 0.5f), (index.y * g_cellsize) + (g_cellsize * 0.5f)};
-}
-
 namespace Game
 {
 class Simulation : public sf::Drawable
 {
 public:
-	Simulation() : attack_grid{2, 4, g_boardcount, g_boardcount},
-					defense_grid{2, 16, g_boardcount, g_boardcount},
+	Simulation() : attack_grid{2, 4, common::single_board_size, common::single_board_size},
+					defense_grid{2, 16, common::single_board_size, common::single_board_size},
 					place_grid{14, 16, 6, 10},
 					human{&attack_grid, &defense_grid, &place_grid},
 					opponent{&defense_grid, &attack_grid, &place_grid},
@@ -44,9 +25,9 @@ public:
 					cell_on_hover{nullptr}, selected_cell{nullptr},
 					hit_emitter{0.0f, 0.0f, 360.0f}, miss_emitter{0.0f, 0.0f, 360.0f},
 					confirm_button{14, 10, 6, 3},
-					human_points_text{index_to_screen_position(sf::Vector2i{14, 5})},
-					opponent_points_text{index_to_screen_position(sf::Vector2i{14, 6})},
-					message_text{index_to_screen_position(sf::Vector2i{2, 1})},
+					human_points_text{common::index_to_screen_position(sf::Vector2i{14, 5})},
+					opponent_points_text{common::index_to_screen_position(sf::Vector2i{14, 6})},
+					message_text{common::index_to_screen_position(sf::Vector2i{2, 1})},
 					end_screen{}, do_reset{false}
 	{
 		hit_emitter.setEmitSpan(360.0f);
@@ -71,9 +52,9 @@ public:
 		miss_emitter.addColor(sf::Color::White, 0.0f);
 		miss_emitter.addColor(sf::Color{200, 200, 209}, 1.0f);
 
-		human_points_text.setFont(g_font);
-		opponent_points_text.setFont(g_font);
-		message_text.setFont(g_font);
+		human_points_text.setFont(common::font);
+		opponent_points_text.setFont(common::font);
+		message_text.setFont(common::font);
 
 		human_points_text.setString("Human: ", human.getPoints(), "/", 17);
 		opponent_points_text.setString("Computer: ", opponent.getPoints(), "/", 17);
@@ -182,7 +163,7 @@ public:
 	{
 		if (mode == Mode::ATTACK)
 		{
-			human.markGuess(screen_position_to_index(mouse));
+			human.markGuess(common::screen_position_to_index(mouse));
 		}
 	}
 
@@ -284,7 +265,7 @@ private:
 		}
 		else
 		{
-			selected_ship = human.getShip(screen_position_to_index(mouse));
+			selected_ship = human.getShip(common::screen_position_to_index(mouse));
 		}
 	}
 
@@ -344,12 +325,12 @@ private:
 
 			if (isHit)
 			{
-				hit_emitter.setPosition(index_to_center_position(index));
+				hit_emitter.setPosition(common::index_to_center_position(index));
 				hit_emitter.emit();
 			}
 			else
 			{
-				miss_emitter.setPosition(index_to_center_position(index));
+				miss_emitter.setPosition(common::index_to_center_position(index));
 				miss_emitter.emit();
 			}
 
@@ -374,12 +355,12 @@ private:
 
 		if (isHit)
 		{
-			hit_emitter.setPosition(index_to_center_position(index));
+			hit_emitter.setPosition(common::index_to_center_position(index));
 			hit_emitter.emit();
 		}
 		else
 		{
-			miss_emitter.setPosition(index_to_center_position(index));
+			miss_emitter.setPosition(common::index_to_center_position(index));
 			miss_emitter.emit();
 		}
 
@@ -437,11 +418,11 @@ int main()
 {
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 8;
-	sf::RenderWindow window{sf::VideoMode{g_winsize.x, g_winsize.y}, "Battleship Game", sf::Style::Default, settings};
+	sf::RenderWindow window{sf::VideoMode{common::window_size.x, common::window_size.y}, "Battleship Game", sf::Style::Default, settings};
 	window.setFramerateLimit(60);
 	sf::Color background{5, 20, 43};
 
-	if (!g_font.loadFromFile("../fonts/consola.ttf"))
+	if (!common::font.loadFromFile("../fonts/consola.ttf"))
 	{
 		return EXIT_FAILURE;
 	}

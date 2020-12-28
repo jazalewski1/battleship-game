@@ -48,7 +48,7 @@ class Grid : public sf::Drawable
 		}
 
 		virtual bool contains(sf::Vector2i index) const { return m_bounds.contains(index); }
-		virtual bool contains(sf::Vector2f pos) const { return contains(screen_position_to_index(pos)); }
+		virtual bool contains(sf::Vector2f pos) const { return contains(common::screen_position_to_index(pos)); }
 
 		sf::IntRect getBounds() const { return m_bounds; }
 		Cell* getCell(sf::Vector2i index)
@@ -58,7 +58,7 @@ class Grid : public sf::Drawable
 				return &search->second;
 			return nullptr;
 		}
-		Cell* getCell(sf::Vector2f pos) { return getCell(screen_position_to_index(pos)); }
+		Cell* getCell(sf::Vector2f pos) { return getCell(common::screen_position_to_index(pos)); }
 };
 
 class GridLabeled : public Grid

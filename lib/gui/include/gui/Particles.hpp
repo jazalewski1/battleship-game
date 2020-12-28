@@ -1,9 +1,10 @@
 #ifndef PARTICLES_HPP
 #define PARTICLES_HPP
 
-#include "SFML/Graphics.hpp"
+#include "common/Common.hpp"
 #include "util/Random.hpp"
 #include "util/Sfutils.hpp"
+#include "SFML/Graphics.hpp"
 #include <cmath>
 #include <iostream>
 #include <list>

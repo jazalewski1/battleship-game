@@ -33,11 +33,11 @@ class Marker : public sf::Drawable
 
 	public:
 		Marker(sf::Vector2i index, Type type) :
-			m_shape{g_cellsize * 0.3f}, m_index{index}, m_type{type}
+			m_shape{common::cell_size * 0.3f}, m_index{index}, m_type{type}
 		{
 			m_shape.setPointCount(16);
 			m_shape.setOrigin(m_shape.getRadius(), m_shape.getRadius());
-			m_pos = index_to_center_position(index);
+			m_pos = common::index_to_center_position(index);
 			m_shape.setPosition(m_pos);
 			updateColor();
 		}

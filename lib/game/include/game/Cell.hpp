@@ -31,8 +31,8 @@ class Cell : public sf::Drawable
 
 	public:
 		Cell(sf::Vector2i index) :
-			m_shape{sf::Vector2f{g_cellsize, g_cellsize}}, m_size{g_cellsize, g_cellsize},
-			m_index{index}, m_pos{index.x * g_cellsize, index.y * g_cellsize}, m_center{index_to_center_position(index)},
+			m_shape{sf::Vector2f{common::cell_size, common::cell_size}}, m_size{common::cell_size, common::cell_size},
+			m_index{index}, m_pos{index.x * common::cell_size, index.y * common::cell_size}, m_center{common::index_to_center_position(index)},
 			m_defaultColor{sf::Color::Transparent}, m_hoverColor{245, 242, 201, 100}, m_selectColor{245, 242, 201, 180}
 		{
 			m_shape.setPosition(m_pos);
@@ -81,7 +81,7 @@ class LabelCell : public Cell
 		{
 			m_shape.setOutlineThickness(0.0f);
 
-			m_text.setFont(g_font);
+			m_text.setFont(common::font);
 			m_text.setString(m_symbol);
 			m_text.alignToCenter();
 			m_text.setFillColor(m_selectColor);

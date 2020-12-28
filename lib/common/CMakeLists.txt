@@ -5,6 +5,7 @@ set(
 
 set(
 	SOURCES
+	src/Common.cpp
 )
 
 add_library(

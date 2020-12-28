@@ -90,7 +90,7 @@ class Player : public sf::Drawable
 			return true;
 		}
 		bool shootable(sf::Vector2i index) const { return m_possibleShots.find(index) != m_possibleShots.end(); }
-		bool shootable(sf::Vector2f pos) const { return shootable(screen_position_to_index(pos)); }
+		bool shootable(sf::Vector2f pos) const { return shootable(common::screen_position_to_index(pos)); }
 
 		virtual void markShot(sf::Vector2i index, bool isHit)
 		{

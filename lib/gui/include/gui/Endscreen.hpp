@@ -26,15 +26,15 @@ class EndScreen : public sf::Drawable
 
 	public:
 		EndScreen() :
-			m_background{sf::Vector2f{index_to_screen_position(sf::Vector2i{g_cellcount.x, 10})}},
+			m_background{sf::Vector2f{common::index_to_screen_position(sf::Vector2i{common::grid_size.x, 10})}},
 			m_text{},
 			m_button{7, 14, 8, 3, true}
 		{
 			m_background.setFillColor(sf::Color{240, 235, 189, 220});
-			m_background.setPosition(index_to_screen_position(sf::Vector2i{0, 9}));
+			m_background.setPosition(common::index_to_screen_position(sf::Vector2i{0, 9}));
 
-			m_text.setFont(g_font);
-			m_text.setPosition(g_winsize.x * 0.5f, 360.0f);
+			m_text.setFont(common::font);
+			m_text.setPosition(common::window_size.x * 0.5f, 360.0f);
 			m_text.setFillColor(sf::Color::Black);
 			m_text.setCharacterSize(72);
 			m_text.alignToCenterX();
