@@ -1,10 +1,11 @@
 set(
 	HEADERS
-	include/game/Ship.hpp
 	include/game/Cell.hpp
+	include/game/Game.hpp
+	include/game/Grid.hpp
 	include/game/Marker.hpp
 	include/game/Players.hpp
-	include/game/Grid.hpp
+	include/game/Ship.hpp
 )
 
 set(

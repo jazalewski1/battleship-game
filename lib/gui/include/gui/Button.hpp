@@ -6,7 +6,7 @@
 #include "common/Common.hpp"
 #include "gui/Guitext.hpp"
 
-namespace Game
+namespace game
 {
 
 class Button : public sf::Drawable

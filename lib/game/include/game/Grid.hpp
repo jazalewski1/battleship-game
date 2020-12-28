@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 
-namespace Game
+namespace game
 {
 
 class Grid : public sf::Drawable

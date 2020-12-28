@@ -5,9 +5,8 @@
 #include "common/Common.hpp"
 #include "gui/Guitext.hpp"
 
-namespace Game
+namespace game
 {
-
 class Cell : public sf::Drawable
 {
 	protected:
@@ -93,7 +92,6 @@ class LabelCell : public Cell
 
 		char getSymbol() const { return m_symbol; }
 };
-
-}
+} // namespace game
 
 #endif

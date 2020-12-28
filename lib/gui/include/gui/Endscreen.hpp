@@ -6,15 +6,14 @@
 #include "common/Common.hpp"
 #include "gui/Guitext.hpp"
 
-namespace Game
+namespace game
 {
-
 class EndScreen : public sf::Drawable
 {
 	private:
 		sf::RectangleShape m_background;
 		Gui::Text m_text;
-		Game::Button m_button;
+		game::Button m_button;
 
 	private:
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const

@@ -17,7 +17,7 @@
 
 
 
-namespace Game
+namespace game
 {
 using random_static = effolkronium::random_static;
 
