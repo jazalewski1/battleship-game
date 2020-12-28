@@ -1,461 +1,493 @@
-#include "SFML/Graphics.hpp"
 #include "common/Common.hpp"
-#include "gui/Sfline.hpp"
-#include "util/Sfutils.hpp"
-
-#include "gui/Button.hpp"
-#include "gui/Endscreen.hpp"
 #include "game/Grid.hpp"
 #include "game/Players.hpp"
+#include "gui/Button.hpp"
+#include "gui/Endscreen.hpp"
 #include "gui/Particles.hpp"
-
+#include "gui/Sfline.hpp"
+#include "util/Sfutils.hpp"
+#include "SFML/Graphics.hpp"
 #include <iostream>
 #include <memory>
 
-
-
-const sf::Vector2i g_cellcount {22, 28};
-const float g_cellsize {32};
-const sf::Vector2u g_winsize {static_cast<unsigned int>(g_cellcount.x * g_cellsize), static_cast<unsigned int>(g_cellcount.y * g_cellsize)};
-const int g_boardcount {10};
+const sf::Vector2i g_cellcount{22, 28};
+const float g_cellsize{32};
+const sf::Vector2u g_winsize{static_cast<unsigned int>(g_cellcount.x * g_cellsize), static_cast<unsigned int>(g_cellcount.y *g_cellsize)};
+const int g_boardcount{10};
 sf::Font g_font;
 
-
-sf::Vector2i ftoi(sf::Vector2f pos) { return sf::Vector2i{static_cast<int>(pos.x / g_cellsize), static_cast<int>(pos.y / g_cellsize)}; }
-sf::Vector2f itof(sf::Vector2i index) { return sf::Vector2f{index.x * g_cellsize, index.y * g_cellsize}; }
-sf::Vector2f itoc(sf::Vector2i index) { return sf::Vector2f{(index.x * g_cellsize) + (g_cellsize * 0.5f), (index.y * g_cellsize) + (g_cellsize * 0.5f)}; }
-
+sf::Vector2i screen_position_to_index(sf::Vector2f pos)
+{
+	return sf::Vector2i{static_cast<int>(pos.x / g_cellsize), static_cast<int>(pos.y / g_cellsize)};
+}
+sf::Vector2f index_to_screen_position(sf::Vector2i index)
+{
+	return sf::Vector2f{index.x * g_cellsize, index.y * g_cellsize};
+}
+sf::Vector2f index_to_center_position(sf::Vector2i index)
+{
+	return sf::Vector2f{(index.x * g_cellsize) + (g_cellsize * 0.5f), (index.y * g_cellsize) + (g_cellsize * 0.5f)};
+}
 
 namespace Game
 {
-
 class Simulation : public sf::Drawable
 {
-	private:
-		enum class Turn {HUMAN, OPPONENT, NONE};
-		enum class Mode {PLACE, ATTACK, FINISH, NONE};
+public:
+	Simulation() : attack_grid{2, 4, g_boardcount, g_boardcount},
+					defense_grid{2, 16, g_boardcount, g_boardcount},
+					place_grid{14, 16, 6, 10},
+					human{&attack_grid, &defense_grid, &place_grid},
+					opponent{&defense_grid, &attack_grid, &place_grid},
+					turn{Turn::NONE}, mode{Mode::PLACE},
+					selected_ship{nullptr},
+					cell_on_hover{nullptr}, selected_cell{nullptr},
+					hit_emitter{0.0f, 0.0f, 360.0f}, miss_emitter{0.0f, 0.0f, 360.0f},
+					confirm_button{14, 10, 6, 3},
+					human_points_text{index_to_screen_position(sf::Vector2i{14, 5})},
+					opponent_points_text{index_to_screen_position(sf::Vector2i{14, 6})},
+					message_text{index_to_screen_position(sf::Vector2i{2, 1})},
+					end_screen{}, do_reset{false}
+	{
+		hit_emitter.setEmitSpan(360.0f);
+		hit_emitter.setEmitCount(100);
+		hit_emitter.setSpeed(0.4f, 1.0f);
+		hit_emitter.setRange(10.0f, 30.0f);
+		hit_emitter.setStartRadius(0.0f, 0.5f);
+		hit_emitter.setEndRadius(1.0f, 10.0f);
+		hit_emitter.addColor(sf::Color::White, 0.0f);
+		hit_emitter.addColor(sf::Color::Yellow, 0.2f);
+		hit_emitter.addColor(sf::Color::Red, 0.4f);
+		hit_emitter.addColor(sf::Color{20, 20, 20}, 0.6f);
+		hit_emitter.addColor(sf::Color{150, 150, 150}, 1.0f);
 
-	private:
-		GridLabeled m_attackGrid;
-		GridLabeled m_defenseGrid;
-		Grid m_placeGrid;
+		miss_emitter.setEmitSpan(360.0f);
+		miss_emitter.setEmitCount(100);
+		miss_emitter.setSpeed(0.5f, 1.5f);
+		miss_emitter.setRange(10.0f, 30.0f);
+		miss_emitter.setStartRadius(0.0f, 1.0f);
+		miss_emitter.setEndRadius(1.0f, 10.0f);
+		miss_emitter.setFading(true);
+		miss_emitter.addColor(sf::Color::White, 0.0f);
+		miss_emitter.addColor(sf::Color{200, 200, 209}, 1.0f);
 
-		HumanPlayer m_human;
-		ComputerPlayer m_opponent;
+		human_points_text.setFont(g_font);
+		opponent_points_text.setFont(g_font);
+		message_text.setFont(g_font);
 
-		Turn m_turn;
-		Mode m_mode;
+		human_points_text.setString("Human: ", human.getPoints(), "/", 17);
+		opponent_points_text.setString("Computer: ", opponent.getPoints(), "/", 17);
+		message_text.setString("Place ships on the board.");
 
-		Ship* m_selectShip;
-		Cell* m_hoverCell;
-		Cell* m_selectCell;
+		human_points_text.setFillColor(sf::Color::White);
+		opponent_points_text.setFillColor(sf::Color::White);
+		message_text.setFillColor(sf::Color::White);
+	}
 
-		ParticleSystem::Emitter m_hitEmitter;
-		ParticleSystem::Emitter m_missEmitter;
+	void update()
+	{
+		hit_emitter.update();
+		miss_emitter.update();
 
-		Button m_confirmButton;
-
-		Gui::Text m_humanPointsText;
-		Gui::Text m_opponentPointsText;
-		Gui::Text m_messageText;
-		EndScreen m_endscreen;
-		bool m_doReset;
-
-	private:
-		void draw(sf::RenderTarget& target, sf::RenderStates states) const
+		if (mode == Mode::PLACE)
 		{
-			target.draw(m_attackGrid, states);
-			target.draw(m_defenseGrid, states);
-			if(m_mode == Mode::PLACE)
-			{
-				target.draw(m_placeGrid, states);
-			}
-			if(m_mode == Mode::ATTACK || m_mode == Mode::FINISH)
-			{
-				target.draw(m_humanPointsText, states);
-				target.draw(m_opponentPointsText, states);
-			}
-			target.draw(m_messageText, states);
-
-			target.draw(m_confirmButton, states);
-
-			target.draw(m_human, states);
-			target.draw(m_opponent, states);
-
-			target.draw(m_hitEmitter, states);
-			target.draw(m_missEmitter, states);
-
-			if(m_mode == Mode::FINISH)
-			{
-				target.draw(m_endscreen, states);
-			}
+			confirm_button.setActive(human.isReady() && !selected_ship);
 		}
-
-		void selectShip(sf::Vector2f mouse)
+		if (mode == Mode::ATTACK)
 		{
-			if(m_selectShip)
+			if (turn == Turn::HUMAN)
 			{
-				if(m_human.placeable(m_selectShip))
+				confirm_button.setActive(selected_cell != nullptr);
+			}
+			if (turn == Turn::OPPONENT)
+			{
+				confirm_button.setActive(false);
+
+				opponent.think();
+				if (!opponent.isThinking())
 				{
-					m_selectShip->adjust(mouse);
-					m_selectShip = nullptr;
+					take_opponent_shot();
 				}
 			}
-			else
+		}
+		if (mode == Mode::FINISH)
+		{
+			confirm_button.setActive(false);
+
+			if (cell_on_hover)
 			{
-				m_selectShip = m_human.getShip(ftoi(mouse));
+				cell_on_hover->defaultColor();
+			}
+			cell_on_hover = nullptr;
+			if (selected_cell)
+			{
+				selected_cell->defaultColor();
+			}
+			selected_cell = nullptr;
+		}
+		choose_message();
+	}
+
+	void hover(sf::Vector2f mouse)
+	{
+		if (mode == Mode::PLACE)
+		{
+			if (selected_ship)
+			{
+				selected_ship->setCenter(mouse);
 			}
 		}
-		void hoverCell(sf::Vector2f mouse)
-		{
-			if(m_attackGrid.contains(mouse))
-			{
-				if(m_hoverCell && m_hoverCell != m_selectCell)
-					m_hoverCell->defaultColor();
 
-				m_hoverCell = m_attackGrid.getCell(mouse);
-				if(m_hoverCell && m_hoverCell != m_selectCell)
-					m_hoverCell->hoverColor();
-			}
-			else
+		if (mode == Mode::ATTACK)
+		{
+			hover_on_cell(mouse);
+		}
+	}
+
+	void lmb_press(sf::Vector2f mouse)
+	{
+		if (mode == Mode::PLACE)
+		{
+			select_ship(mouse);
+
+			if (confirm_button.pressed(mouse))
 			{
-				if(m_hoverCell && m_hoverCell != m_selectCell)
-					m_hoverCell->defaultColor();
-				m_hoverCell = nullptr;
+				mode = Mode::ATTACK;
+				turn = Turn::HUMAN;
+				return;
 			}
 		}
-		void selectCell(sf::Vector2f mouse)
+
+		if (mode == Mode::ATTACK)
 		{
-			if(m_selectCell)
+			if (turn == Turn::HUMAN)
 			{
-				m_selectCell->defaultColor();
-				m_selectCell = nullptr;
-			}
-			if(m_human.shootable(mouse))
-			{
-				m_selectCell = m_attackGrid.getCell(mouse);
-				if(m_selectCell)
-					m_selectCell->selectColor();
-			}
-		}
-		void humanShoot()
-		{
-			if(m_selectCell && m_confirmButton.isActive())
-			{
-				sf::Vector2i index {m_selectCell->getIndex()};
-				bool isHit {m_opponent.isShip(index)};
-				m_human.markShot(index, isHit);
-
-				m_selectCell->defaultColor();
-				m_selectCell = nullptr;
-
-				m_humanPointsText.setString("  Human: ", m_human.getPoints(), "/", 17);
-				m_messageText.append((isHit ? " It's a hit!" : " It's a miss..."));
-
-				if(isHit)
+				if (confirm_button.pressed(mouse))
 				{
-					m_hitEmitter.setPosition(itoc(index));
-					m_hitEmitter.emit();
+					take_human_shot();
+				}
+			}
+			select_cell(mouse);
+		}
+		if (mode == Mode::FINISH)
+		{
+			if (end_screen.buttonPressed(mouse))
+			{
+				do_reset = true;
+			}
+		}
+	}
+
+	void rmb_press(sf::Vector2f mouse)
+	{
+		if (mode == Mode::ATTACK)
+		{
+			human.markGuess(screen_position_to_index(mouse));
+		}
+	}
+
+	void spacebar_press()
+	{
+		if (mode == Mode::PLACE)
+		{
+			if (selected_ship)
+			{
+				selected_ship->rotate();
+			}
+		}
+		if (mode == Mode::ATTACK)
+		{
+			take_human_shot();
+		}
+	}
+
+	bool reset() const { return do_reset; }
+
+private:
+	enum class Turn
+	{
+		HUMAN,
+		OPPONENT,
+		NONE
+	};
+	enum class Mode
+	{
+		PLACE,
+		ATTACK,
+		FINISH,
+		NONE
+	};
+
+	GridLabeled attack_grid;
+	GridLabeled defense_grid;
+	Grid place_grid;
+
+	HumanPlayer human;
+	ComputerPlayer opponent;
+
+	Turn turn;
+	Mode mode;
+
+	Ship *selected_ship;
+	Cell *cell_on_hover;
+	Cell *selected_cell;
+
+	ParticleSystem::Emitter hit_emitter;
+	ParticleSystem::Emitter miss_emitter;
+
+	Button confirm_button;
+
+	Gui::Text human_points_text;
+	Gui::Text opponent_points_text;
+	Gui::Text message_text;
+	EndScreen end_screen;
+	bool do_reset;
+
+	void draw(sf::RenderTarget &target, sf::RenderStates states) const
+	{
+		target.draw(attack_grid, states);
+		target.draw(defense_grid, states);
+		if (mode == Mode::PLACE)
+		{
+			target.draw(place_grid, states);
+		}
+		if (mode == Mode::ATTACK || mode == Mode::FINISH)
+		{
+			target.draw(human_points_text, states);
+			target.draw(opponent_points_text, states);
+		}
+		target.draw(message_text, states);
+
+		target.draw(confirm_button, states);
+
+		target.draw(human, states);
+		target.draw(opponent, states);
+
+		target.draw(hit_emitter, states);
+		target.draw(miss_emitter, states);
+
+		if (mode == Mode::FINISH)
+		{
+			target.draw(end_screen, states);
+		}
+	}
+
+	void select_ship(sf::Vector2f mouse)
+	{
+		if (selected_ship)
+		{
+			if (human.placeable(selected_ship))
+			{
+				selected_ship->adjust(mouse);
+				selected_ship = nullptr;
+			}
+		}
+		else
+		{
+			selected_ship = human.getShip(screen_position_to_index(mouse));
+		}
+	}
+
+	void hover_on_cell(sf::Vector2f mouse)
+	{
+		if (attack_grid.contains(mouse))
+		{
+			if (cell_on_hover && cell_on_hover != selected_cell)
+			{
+				cell_on_hover->defaultColor();
+			}
+
+			cell_on_hover = attack_grid.getCell(mouse);
+			if (cell_on_hover && cell_on_hover != selected_cell)
+			{
+				cell_on_hover->hoverColor();
+			}
+		}
+		else
+		{
+			if (cell_on_hover && cell_on_hover != selected_cell)
+			{
+				cell_on_hover->defaultColor();
+			}
+			cell_on_hover = nullptr;
+		}
+	}
+
+	void select_cell(sf::Vector2f mouse)
+	{
+		if (selected_cell)
+		{
+			selected_cell->defaultColor();
+			selected_cell = nullptr;
+		}
+		if (human.shootable(mouse))
+		{
+			selected_cell = attack_grid.getCell(mouse);
+			if (selected_cell)
+				selected_cell->selectColor();
+		}
+	}
+
+	void take_human_shot()
+	{
+		if (selected_cell && confirm_button.isActive())
+		{
+			sf::Vector2i index{selected_cell->getIndex()};
+			bool isHit{opponent.isShip(index)};
+			human.markShot(index, isHit);
+
+			selected_cell->defaultColor();
+			selected_cell = nullptr;
+
+			human_points_text.setString("  Human: ", human.getPoints(), "/", 17);
+			message_text.append((isHit ? " It's a hit!" : " It's a miss..."));
+
+			if (isHit)
+			{
+				hit_emitter.setPosition(index_to_center_position(index));
+				hit_emitter.emit();
+			}
+			else
+			{
+				miss_emitter.setPosition(index_to_center_position(index));
+				miss_emitter.emit();
+			}
+
+			if (human.getPoints() >= 17)
+			{
+				mode = Mode::FINISH;	
+			}
+
+			opponent.startThinking();
+			turn = Turn::OPPONENT;
+		}
+	}
+
+	void take_opponent_shot()
+	{
+		sf::Vector2i index{opponent.makeShot()};
+		bool isHit{human.isShip(index)};
+		opponent.markShot(index, isHit);
+
+		message_text.append((isHit ? " It's a hit!" : " It's a miss."));
+		opponent_points_text.setString("Computer: ", opponent.getPoints(), "/", 17);
+
+		if (isHit)
+		{
+			hit_emitter.setPosition(index_to_center_position(index));
+			hit_emitter.emit();
+		}
+		else
+		{
+			miss_emitter.setPosition(index_to_center_position(index));
+			miss_emitter.emit();
+		}
+
+		if (opponent.getPoints() >= 17)
+		{
+			mode = Mode::FINISH;
+		}
+
+		turn = Turn::HUMAN;
+	}
+
+	void choose_message()
+	{
+		if (mode == Mode::PLACE)
+		{
+			message_text.setString("Place ships on the board.");
+		}
+		if (mode == Mode::ATTACK)
+		{
+			if (turn == Turn::HUMAN)
+			{
+				if (selected_cell)
+				{
+					std::pair<char, char> label{attack_grid.getSymbols(selected_cell->getIndex())};
+					message_text.setString(" You selected: ", label.first, label.second);
 				}
 				else
 				{
-					m_missEmitter.setPosition(itoc(index));
-					m_missEmitter.emit();
+					message_text.setString("Choose a spot to shoot!");
 				}
-
-				if(m_human.getPoints() >= 17)
-					m_mode = Mode::FINISH;
-
-				m_opponent.startThinking();
-				m_turn = Turn::OPPONENT;
+			}
+			if (turn == Turn::OPPONENT)
+			{
+				message_text.setString("Opponent's turn.");
 			}
 		}
-		void opponentShoot()
+		if (mode == Mode::FINISH)
 		{
-			sf::Vector2i index {m_opponent.makeShot()};
-			bool isHit {m_human.isShip(index)};
-			m_opponent.markShot(index, isHit);
-
-			m_messageText.append((isHit ? " It's a hit!" : " It's a miss."));
-			m_opponentPointsText.setString("Computer: ", m_opponent.getPoints(), "/", 17);
-
-			if(isHit)
+			if (human.getPoints() > opponent.getPoints())
 			{
-				m_hitEmitter.setPosition(itoc(index));
-				m_hitEmitter.emit();
+				message_text.setString("Finish! You win!");
+				end_screen.setScreen(true);
 			}
 			else
 			{
-				m_missEmitter.setPosition(itoc(index));
-				m_missEmitter.emit();
-			}
-
-			if(m_opponent.getPoints() >= 17)
-				m_mode = Mode::FINISH;
-
-			m_turn = Turn::HUMAN;
-		}
-		void chooseMessage()
-		{
-			if(m_mode == Mode::PLACE)
-			{
-				m_messageText.setString("Place ships on the board.");
-			}
-			if(m_mode == Mode::ATTACK)
-			{
-				if(m_turn == Turn::HUMAN)
-				{
-					if(m_selectCell)
-					{
-						std::pair<char, char> label {m_attackGrid.getSymbols(m_selectCell->getIndex())};
-						m_messageText.setString(" You selected: ", label.first, label.second);
-					}
-					else
-					{
-						m_messageText.setString("Choose a spot to shoot!");
-					}
-				}
-				if(m_turn == Turn::OPPONENT)
-				{
-					m_messageText.setString("Opponent's turn.");
-				}
-			}
-			if(m_mode == Mode::FINISH)
-			{
-				if(m_human.getPoints() > m_opponent.getPoints())
-				{
-					m_messageText.setString("Finish! You win!");
-					m_endscreen.setScreen(true);
-				}
-				else
-				{
-					m_messageText.setString("Finish! You lose...");
-					m_endscreen.setScreen(false);
-				}
+				message_text.setString("Finish! You lose...");
+				end_screen.setScreen(false);
 			}
 		}
-
-
-	public:
-		Simulation() :
-			m_attackGrid{2, 4, g_boardcount, g_boardcount},
-			m_defenseGrid{2, 16, g_boardcount, g_boardcount},
-			m_placeGrid{14, 16, 6, 10},
-			m_human{&m_attackGrid, &m_defenseGrid, &m_placeGrid},
-			m_opponent{&m_defenseGrid, &m_attackGrid, &m_placeGrid},
-			m_turn{Turn::NONE}, m_mode{Mode::PLACE},
-			m_selectShip{nullptr},
-			m_hoverCell{nullptr}, m_selectCell{nullptr},
-			m_hitEmitter{0.0f, 0.0f, 360.0f}, m_missEmitter{0.0f, 0.0f, 360.0f},
-			m_confirmButton{14, 10, 6, 3},
-			m_humanPointsText{itof(sf::Vector2i{14, 5})},
-			m_opponentPointsText{itof(sf::Vector2i{14, 6})},
-			m_messageText{itof(sf::Vector2i{2, 1})},
-			m_endscreen{}, m_doReset{false}
-		{
-			m_hitEmitter.setEmitSpan(360.0f);
-			m_hitEmitter.setEmitCount(100);
-			m_hitEmitter.setSpeed(0.4f, 1.0f);
-			m_hitEmitter.setRange(10.0f, 30.0f);
-			m_hitEmitter.setStartRadius(0.0f, 0.5f);
-			m_hitEmitter.setEndRadius(1.0f, 10.0f);
-			m_hitEmitter.addColor(sf::Color::White, 0.0f);
-			m_hitEmitter.addColor(sf::Color::Yellow, 0.2f);
-			m_hitEmitter.addColor(sf::Color::Red, 0.4f);
-			m_hitEmitter.addColor(sf::Color{20, 20, 20}, 0.6f);
-			m_hitEmitter.addColor(sf::Color{150, 150, 150}, 1.0f);
-
-			m_missEmitter.setEmitSpan(360.0f);
-			m_missEmitter.setEmitCount(100);
-			m_missEmitter.setSpeed(0.5f, 1.5f);
-			m_missEmitter.setRange(10.0f, 30.0f);
-			m_missEmitter.setStartRadius(0.0f, 1.0f);
-			m_missEmitter.setEndRadius(1.0f, 10.0f);
-			m_missEmitter.setFading(true);
-			m_missEmitter.addColor(sf::Color::White, 0.0f);
-			m_missEmitter.addColor(sf::Color{200, 200, 209}, 1.0f);
-
-
-
-			m_humanPointsText.setFont(g_font);
-			m_opponentPointsText.setFont(g_font);
-			m_messageText.setFont(g_font);
-
-			m_humanPointsText.setString("Human: ", m_human.getPoints(), "/", 17);
-			m_opponentPointsText.setString("Computer: ", m_opponent.getPoints(), "/", 17);
-			m_messageText.setString("Place ships on the board.");
-
-			m_humanPointsText.setFillColor(sf::Color::White);
-			m_opponentPointsText.setFillColor(sf::Color::White);
-			m_messageText.setFillColor(sf::Color::White);
-		}
-
-
-		void update()
-		{
-			m_hitEmitter.update();
-			m_missEmitter.update();
-
-			if(m_mode == Mode::PLACE)
-			{
-				m_confirmButton.setActive(m_human.isReady() && !m_selectShip);
-			}
-			if(m_mode == Mode::ATTACK)
-			{
-				if(m_turn == Turn::HUMAN)
-				{
-					m_confirmButton.setActive(m_selectCell != nullptr);
-				}
-				if(m_turn == Turn::OPPONENT)
-				{
-					m_confirmButton.setActive(false);
-
-					m_opponent.think();
-					if(!m_opponent.isThinking())
-						opponentShoot();
-				}
-			}
-			if(m_mode == Mode::FINISH)
-			{
-				m_confirmButton.setActive(false);
-
-				if(m_hoverCell)
-					m_hoverCell->defaultColor();
-				m_hoverCell = nullptr;
-				if(m_selectCell)
-					m_selectCell->defaultColor();
-				m_selectCell = nullptr;
-			}
-			chooseMessage();
-		}
-
-		void hover(sf::Vector2f mouse)
-		{
-			if(m_mode == Mode::PLACE)
-			{
-				if(m_selectShip)
-					m_selectShip->setCenter(mouse);
-			}
-
-			if(m_mode == Mode::ATTACK)
-			{
-				hoverCell(mouse);
-			}
-		}
-
-		void lmbPress(sf::Vector2f mouse)
-		{
-			if(m_mode == Mode::PLACE)
-			{
-				selectShip(mouse);
-
-				if(m_confirmButton.pressed(mouse))
-				{
-					m_mode = Mode::ATTACK;
-					m_turn = Turn::HUMAN;
-					return;
-				}
-			}
-
-			if(m_mode == Mode::ATTACK)
-			{
-				if(m_turn == Turn::HUMAN)
-				{
-					if(m_confirmButton.pressed(mouse))
-					{
-						humanShoot();
-					}
-				}
-				selectCell(mouse);
-			}
-			if(m_mode == Mode::FINISH)
-			{
-				if(m_endscreen.buttonPressed(mouse))
-					m_doReset = true;
-			}
-		}
-		void rmbPress(sf::Vector2f mouse)
-		{
-			if(m_mode == Mode::ATTACK)
-			{
-				m_human.markGuess(ftoi(mouse));
-			}
-		}
-
-		void spacebar()
-		{
-			if(m_mode == Mode::PLACE)
-			{
-				if(m_selectShip)
-					m_selectShip->rotate();
-			}
-			if(m_mode == Mode::ATTACK)
-			{
-				humanShoot();
-			}
-		}
-
-		bool doReset() const { return m_doReset; }
+	}
 };
-
-}
-
-
+} // namespace Game
 
 int main()
 {
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 8;
-	sf::RenderWindow window {sf::VideoMode{g_winsize.x, g_winsize.y}, "Battleship Game", sf::Style::Default, settings};
+	sf::RenderWindow window{sf::VideoMode{g_winsize.x, g_winsize.y}, "Battleship Game", sf::Style::Default, settings};
 	window.setFramerateLimit(60);
-	sf::Color background {5, 20, 43};
+	sf::Color background{5, 20, 43};
 
-	if(!g_font.loadFromFile("../fonts/consola.ttf"))
-		return EXIT_FAILURE;
-
-
-	std::unique_ptr<Game::Simulation> simulation {std::make_unique<Game::Simulation>()};
-
-	while(window.isOpen())
+	if (!g_font.loadFromFile("../fonts/consola.ttf"))
 	{
-		sf::Vector2i mousei {sf::Mouse::getPosition(window)};
-		sf::Vector2f mouse {mousei.x * 1.0f, mousei.y * 1.0f};
+		return EXIT_FAILURE;
+	}
 
+	std::unique_ptr<Game::Simulation> simulation{std::make_unique<Game::Simulation>()};
+
+	while (window.isOpen())
+	{
+		sf::Vector2i mousei{sf::Mouse::getPosition(window)};
+		sf::Vector2f mouse{mousei.x * 1.0f, mousei.y * 1.0f};
 
 		sf::Event event;
-		while(window.pollEvent(event))
+		while (window.pollEvent(event))
 		{
-			if(event.type == sf::Event::Closed)
+			if (event.type == sf::Event::Closed)
 			{
 				window.close();
 			}
 
-			if(event.type == sf::Event::MouseButtonPressed)
+			if (event.type == sf::Event::MouseButtonPressed)
 			{
-				if(event.mouseButton.button == sf::Mouse::Left)
+				if (event.mouseButton.button == sf::Mouse::Left)
 				{
-					simulation->lmbPress(mouse);
+					simulation->lmb_press(mouse);
 
-					if(simulation->doReset())
+					if (simulation->reset())
+					{
 						simulation = std::make_unique<Game::Simulation>();
+					}
 				}
-				if(event.mouseButton.button == sf::Mouse::Right)
+				if (event.mouseButton.button == sf::Mouse::Right)
 				{
-					simulation->rmbPress(mouse);
+					simulation->rmb_press(mouse);
 				}
 			}
 
-			if(event.type == sf::Event::KeyPressed)
+			if (event.type == sf::Event::KeyPressed)
 			{
-				if(event.key.code == sf::Keyboard::Space)
+				if (event.key.code == sf::Keyboard::Space)
 				{
-					simulation->spacebar();
+					simulation->spacebar_press();
 				}
-				if(event.key.code == sf::Keyboard::Escape)
+				if (event.key.code == sf::Keyboard::Escape)
 				{
 					window.close();
 				}
-
 			}
 		}
 

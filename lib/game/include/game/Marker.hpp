@@ -37,7 +37,7 @@ class Marker : public sf::Drawable
 		{
 			m_shape.setPointCount(16);
 			m_shape.setOrigin(m_shape.getRadius(), m_shape.getRadius());
-			m_pos = itoc(index);
+			m_pos = index_to_center_position(index);
 			m_shape.setPosition(m_pos);
 			updateColor();
 		}
