@@ -410,7 +410,7 @@ int main()
 	window.setFramerateLimit(60);
 	sf::Color background {5, 20, 43};
 
-	if(!g_font.loadFromFile("content/consola.ttf"))
+	if(!g_font.loadFromFile("../fonts/consola.ttf"))
 		return EXIT_FAILURE;
 
 
