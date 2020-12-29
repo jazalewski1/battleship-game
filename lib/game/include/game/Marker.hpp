@@ -4,54 +4,68 @@
 #include "SFML/Graphics.hpp"
 #include "common/Common.hpp"
 
-
 class Marker : public sf::Drawable
 {
-	public:
-		enum class Type {HIT, MISS, GUESS};
+public:
+	enum class Type
+	{
+		HIT,
+		MISS,
+		GUESS
+	};
 
-	private:
-		sf::CircleShape m_shape;
-		sf::Vector2i m_index;
-		sf::Vector2f m_pos;
-		Type m_type;
+	Marker(sf::Vector2i index, Type type) :
+		shape{common::cell_size * 0.3f}, index{index}, pos{common::index_to_center_position(index)},
+		type{type}
+	{
+		shape.setPointCount(16);
+		shape.setOrigin(shape.getRadius(), shape.getRadius());
+		shape.setPosition(pos);
+		update_color();
+	}
 
-	private:
-		void draw(sf::RenderTarget& target, sf::RenderStates states) const
+	void set_type(Type type)
+	{
+		type = type;
+		update_color();
+	}
+
+	bool is_hit() const
+	{
+		return type == Type::HIT;
+	}
+
+	bool is_guess() const
+	{
+		return type == Type::GUESS;
+	}
+
+private:
+	sf::CircleShape shape;
+	const sf::Vector2i index;
+	const sf::Vector2f pos;
+	Type type;
+
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const
+	{
+		target.draw(shape, states);
+	}
+
+	void update_color()
+	{
+		if (type == Type::HIT)
 		{
-			target.draw(m_shape, states);
+			shape.setFillColor(sf::Color::Red);
 		}
-		void updateColor()
+		if (type == Type::MISS)
 		{
-			if(m_type == Type::HIT)
-				m_shape.setFillColor(sf::Color::Red);
-			if(m_type == Type::MISS)
-				m_shape.setFillColor(sf::Color::White);
-			if(m_type == Type::GUESS)
-				m_shape.setFillColor(sf::Color{255, 255, 255, 40});
+			shape.setFillColor(sf::Color::White);
 		}
-
-	public:
-		Marker(sf::Vector2i index, Type type) :
-			m_shape{common::cell_size * 0.3f}, m_index{index}, m_type{type}
+		if (type == Type::GUESS)
 		{
-			m_shape.setPointCount(16);
-			m_shape.setOrigin(m_shape.getRadius(), m_shape.getRadius());
-			m_pos = common::index_to_center_position(index);
-			m_shape.setPosition(m_pos);
-			updateColor();
+			shape.setFillColor(sf::Color{255, 255, 255, 40});
 		}
-
-		void setType(Type type)
-		{
-			m_type = type;
-			updateColor();
-		}
-
-		bool isHit() const { return m_type == Type::HIT; }
-		bool isGuess() const { return m_type == Type::GUESS; }
+	}
 };
-
-
 
 #endif

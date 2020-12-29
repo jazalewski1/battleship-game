@@ -97,7 +97,7 @@ class Player : public sf::Drawable
 			Marker::Type type {(isHit ? Marker::Type::HIT : Marker::Type::MISS)};
 			auto search {m_markers.find(index)};
 			if(search != m_markers.end())
-				search->second.setType(type);
+				search->second.set_type(type);
 			else
 				m_markers.emplace(index, Marker{index, type});
 
@@ -180,7 +180,7 @@ class HumanPlayer : public Player
 				auto search {m_markers.find(index)};
 				if(search != m_markers.end())
 				{
-					if(search->second.isGuess())
+					if(search->second.is_guess())
 						m_markers.erase(search);
 				}
 				else
@@ -308,7 +308,7 @@ class ComputerPlayer : public Player
 				default: break;
 			}
 		}
-		bool isHit(sf::Vector2i index) const { return m_markers.at(index).isHit(); }
+		bool isHit(sf::Vector2i index) const { return m_markers.at(index).is_hit(); }
 
 	public:
 		ComputerPlayer(const Grid* attackGrid, const Grid* defenseGrid, const Grid* placeGrid) :
@@ -375,7 +375,7 @@ class ComputerPlayer : public Player
 							auto markerItr {m_markers.find(index)};
 							if(markerItr != m_markers.end())
 							{
-								if(markerItr->second.isHit())
+								if(markerItr->second.is_hit())
 								{
 									index = index + m_diff;
 								}
@@ -415,7 +415,7 @@ class ComputerPlayer : public Player
 								auto markerItr {m_markers.find(index)};
 								if(markerItr != m_markers.end())
 								{
-									if(markerItr->second.isHit())
+									if(markerItr->second.is_hit())
 									{
 										index = index + m_diff;
 									}
@@ -452,7 +452,7 @@ class ComputerPlayer : public Player
 								auto markerItr {m_markers.find(index)};
 								if(markerItr != m_markers.end())
 								{
-									if(markerItr->second.isHit())
+									if(markerItr->second.is_hit())
 									{
 										index = index + m_diff;
 									}
@@ -488,7 +488,7 @@ class ComputerPlayer : public Player
 								auto markerItr {m_markers.find(index)};
 								if(markerItr != m_markers.end())
 								{
-									if(markerItr->second.isHit())
+									if(markerItr->second.is_hit())
 									{
 										index = index + m_diff;
 									}
