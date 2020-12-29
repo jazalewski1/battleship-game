@@ -85,7 +85,7 @@ public:
 				confirm_button.setActive(false);
 
 				opponent.think();
-				if (!opponent.isThinking())
+				if (!opponent.is_thinking())
 				{
 					take_opponent_shot();
 				}
@@ -342,14 +342,14 @@ private:
 				mode = Mode::FINISH;
 			}
 
-			opponent.startThinking();
+			opponent.start_thinking();
 			turn = Turn::OPPONENT;
 		}
 	}
 
 	void take_opponent_shot()
 	{
-		const auto index = sf::Vector2i{opponent.makeShot()};
+		const auto index = sf::Vector2i{opponent.make_shot()};
 		const auto is_hit = human.contains_ship(index);
 		opponent.mark_shot(index, is_hit);
 

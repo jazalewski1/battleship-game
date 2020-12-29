@@ -146,7 +146,7 @@ protected:
 	int points;
 
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
-	virtual void fillShips() = 0;
+	virtual void fill_ships() = 0;
 };
 } // namespace game
 

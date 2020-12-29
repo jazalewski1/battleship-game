@@ -27,7 +27,7 @@ class HumanPlayer : public Player
 				target.draw(marker.second, states);
 		}
 
-		void fillShips() override
+		void fill_ships() override
 		{
 			sf::Vector2i start {place_grid.get_bounds().left, place_grid.get_bounds().top};
 			ships.push_back(Ship{start.x, start.y + 0, 5});
@@ -41,7 +41,7 @@ class HumanPlayer : public Player
 		HumanPlayer(Grid& attack_grid, Grid& defense_grid, Grid& place_grid) :
 			Player{attack_grid, defense_grid, place_grid}
 		{
-			fillShips();
+			fill_ships();
 		}
 
 		bool isReady() const
