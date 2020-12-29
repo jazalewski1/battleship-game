@@ -2,6 +2,7 @@
 
 #include "SFML/Graphics.hpp"
 #include "common/Common.hpp"
+#include "game/ComputerPlayer.hpp"
 #include "game/Game.hpp"
 #include "game/Grid.hpp"
 #include "game/HumanPlayer.hpp"

@@ -1,6 +1,7 @@
 set(
 	HEADERS
 	include/game/Cell.hpp
+	include/game/ComputerPlayer.hpp
 	include/game/Game.hpp
 	include/game/Grid.hpp
 	include/game/HumanPlayer.hpp
