@@ -21,7 +21,7 @@ public:
 		shape.setOutlineThickness(0.5f);
 	}
 
-	Cell(int indexX, int indexY) : Cell{sf::Vector2i{indexX, indexY}}
+	Cell(int index_x, int index_y) : Cell{sf::Vector2i{index_x, index_y}}
 	{
 	}
 
@@ -65,9 +65,9 @@ protected:
 	const sf::Vector2i index;
 	const sf::Vector2f position;
 	const sf::Vector2f center;
-	sf::Color default_color;
-	sf::Color color_on_hover;
-	sf::Color color_on_select;
+	const sf::Color default_color;
+	const sf::Color color_on_hover;
+	const sf::Color color_on_select;
 
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
 	{
@@ -88,8 +88,8 @@ public:
 		text.alignToCenter();
 		text.setFillColor(color_on_select);
 	}
-	LabelCell(int indexX, int indexY, char symbol) :
-		LabelCell{sf::Vector2i{indexX, indexY}, symbol}
+	LabelCell(int index_x, int index_y, char symbol) :
+		LabelCell{sf::Vector2i{index_x, index_y}, symbol}
 	{
 	}
 
@@ -100,7 +100,7 @@ public:
 
 private:
 	Gui::Text text;
-	char symbol;
+	const char symbol;
 
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override
 	{
