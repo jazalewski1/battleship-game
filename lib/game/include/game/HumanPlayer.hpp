@@ -21,33 +21,33 @@ class HumanPlayer : public Player
 	private:
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const override
 		{
-			for(const auto& ship : m_ships)
+			for(const auto& ship : ships)
 				target.draw(ship, states);
-			for(const auto& marker : m_markers)
+			for(const auto& marker : markers)
 				target.draw(marker.second, states);
 		}
 
 		void fillShips() override
 		{
-			sf::Vector2i start {m_placeGrid->get_bounds().left, m_placeGrid->get_bounds().top};
-			m_ships.push_back(Ship{start.x, start.y + 0, 5});
-			m_ships.push_back(Ship{start.x, start.y + 2, 4});
-			m_ships.push_back(Ship{start.x, start.y + 4, 3});
-			m_ships.push_back(Ship{start.x, start.y + 6, 3});
-			m_ships.push_back(Ship{start.x, start.y + 8, 2});
+			sf::Vector2i start {place_grid.get_bounds().left, place_grid.get_bounds().top};
+			ships.push_back(Ship{start.x, start.y + 0, 5});
+			ships.push_back(Ship{start.x, start.y + 2, 4});
+			ships.push_back(Ship{start.x, start.y + 4, 3});
+			ships.push_back(Ship{start.x, start.y + 6, 3});
+			ships.push_back(Ship{start.x, start.y + 8, 2});
 		}
 
 	public:
-		HumanPlayer(const Grid* attackGrid, const Grid* defenseGrid, const Grid* placeGrid) :
-			Player{attackGrid, defenseGrid, placeGrid}
+		HumanPlayer(Grid& attack_grid, Grid& defense_grid, Grid& place_grid) :
+			Player{attack_grid, defense_grid, place_grid}
 		{
 			fillShips();
 		}
 
 		bool isReady() const
 		{
-			sf::IntRect gridBounds {m_defenseGrid->get_bounds()};
-			for(const auto& ship : m_ships)
+			sf::IntRect gridBounds {defense_grid.get_bounds()};
+			for(const auto& ship : ships)
 			{
 				sf::IntRect shipBounds {ship.getBounds()};
 				if(!(gridBounds.contains(shipBounds.left, shipBounds.top) &&
@@ -59,16 +59,16 @@ class HumanPlayer : public Player
 
 		void markGuess(sf::Vector2i index)
 		{
-			if(m_attackGrid->contains(index))
+			if(attack_grid.contains(index))
 			{
-				auto search {m_markers.find(index)};
-				if(search != m_markers.end())
+				auto search {markers.find(index)};
+				if(search != markers.end())
 				{
 					if(search->second.is_guess())
-						m_markers.erase(search);
+						markers.erase(search);
 				}
 				else
-					m_markers.emplace(index, Marker{index, Marker::Type::GUESS});
+					markers.emplace(index, Marker{index, Marker::Type::GUESS});
 			}
 		}
 };

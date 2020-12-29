@@ -23,7 +23,7 @@ public:
 	Game() :
 		attack_grid{2, 4, common::single_board_size, common::single_board_size},
 		defense_grid{2, 16, common::single_board_size, common::single_board_size},
-		place_grid{14, 16, 6, 10}, human{&attack_grid, &defense_grid, &place_grid}, opponent{&defense_grid, &attack_grid, &place_grid},
+		place_grid{14, 16, 6, 10}, human{attack_grid, defense_grid, place_grid}, opponent{defense_grid, attack_grid, place_grid},
 		turn{Turn::NONE}, mode{Mode::PLACE}, selected_ship{nullptr}, cell_on_hover{nullptr}, selected_cell{nullptr},
 		hit_emitter{0.0f, 0.0f, 360.0f}, miss_emitter{0.0f, 0.0f, 360.0f}, confirm_button{14, 10, 6, 3},
 		human_points_text{common::index_to_screen_position(sf::Vector2i{14, 5})},
@@ -56,8 +56,8 @@ public:
 		opponent_points_text.setFont(common::font);
 		message_text.setFont(common::font);
 
-		human_points_text.setString("Human: ", human.getPoints(), "/", 17);
-		opponent_points_text.setString("Computer: ", opponent.getPoints(), "/", 17);
+		human_points_text.setString("Human: ", human.get_points(), "/", 17);
+		opponent_points_text.setString("Computer: ", opponent.get_points(), "/", 17);
 		message_text.setString("Place ships on the board.");
 
 		human_points_text.setFillColor(sf::Color::White);
@@ -268,7 +268,7 @@ private:
 		}
 		else
 		{
-			selected_ship = human.getShip(common::screen_position_to_index(mouse));
+			selected_ship = human.get_ship(common::screen_position_to_index(mouse));
 		}
 	}
 
@@ -317,13 +317,13 @@ private:
 		if (selected_cell && confirm_button.isActive())
 		{
 			const auto index = sf::Vector2i{selected_cell->get_index()};
-			const auto is_hit = opponent.isShip(index);
-			human.markShot(index, is_hit);
+			const auto is_hit = opponent.contains_ship(index);
+			human.mark_shot(index, is_hit);
 
 			selected_cell->put_default_color();
 			selected_cell = nullptr;
 
-			human_points_text.setString("  Human: ", human.getPoints(), "/", 17);
+			human_points_text.setString("  Human: ", human.get_points(), "/", 17);
 			message_text.append((is_hit ? " It's a hit!" : " It's a miss..."));
 
 			if (is_hit)
@@ -337,7 +337,7 @@ private:
 				miss_emitter.emit();
 			}
 
-			if (human.getPoints() >= 17)
+			if (human.get_points() >= 17)
 			{
 				mode = Mode::FINISH;
 			}
@@ -350,11 +350,11 @@ private:
 	void take_opponent_shot()
 	{
 		const auto index = sf::Vector2i{opponent.makeShot()};
-		const auto is_hit = human.isShip(index);
-		opponent.markShot(index, is_hit);
+		const auto is_hit = human.contains_ship(index);
+		opponent.mark_shot(index, is_hit);
 
 		message_text.append((is_hit ? " It's a hit!" : " It's a miss."));
-		opponent_points_text.setString("Computer: ", opponent.getPoints(), "/", 17);
+		opponent_points_text.setString("Computer: ", opponent.get_points(), "/", 17);
 
 		if (is_hit)
 		{
@@ -367,7 +367,7 @@ private:
 			miss_emitter.emit();
 		}
 
-		if (opponent.getPoints() >= 17)
+		if (opponent.get_points() >= 17)
 		{
 			mode = Mode::FINISH;
 		}
@@ -402,7 +402,7 @@ private:
 		}
 		if (mode == Mode::FINISH)
 		{
-			if (human.getPoints() > opponent.getPoints())
+			if (human.get_points() > opponent.get_points())
 			{
 				message_text.setString("Finish! You win!");
 				end_screen.setScreen(true);

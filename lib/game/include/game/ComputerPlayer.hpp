@@ -1,9 +1,12 @@
 #pragma once
 
 #include "game/Player.hpp"
+#include "util/Random.hpp"
 
 namespace game
 {
+using random_static = effolkronium::random_static;
+
 class ComputerPlayer : public Player
 {
 	private:
@@ -16,93 +19,93 @@ class ComputerPlayer : public Player
 		enum class Dir {U, R, D, L};
 
 	private:
-		Shot m_lastShot;
-		sf::Vector2i m_origin;
-		Dir m_direction;
-		sf::Vector2i m_diff;
-		bool m_foundOrigin;
-		bool m_foundPlane;
-		bool m_foundEnd1;
-		bool m_foundEnd2;
-		sf::IntRect m_foundShip;
+		Shot lastShot;
+		sf::Vector2i origin;
+		Dir direction;
+		sf::Vector2i diff;
+		bool foundOrigin;
+		bool foundPlane;
+		bool foundEnd1;
+		bool foundEnd2;
+		sf::IntRect foundShip;
 
-		int m_delayLimit;
-		int m_delayCounter;
+		int delayLimit;
+		int delayCounter;
 
 	private:
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const override
 		{
-			// for(const auto& ship : m_ships)
+			// for(const auto& ship : ships)
 			// 	target.draw(ship, states);
-			for(const auto& marker : m_markers)
+			for(const auto& marker : markers)
 				target.draw(marker.second, states);
 		}
 
 
 		void fillShips() override
 		{
-			sf::Vector2i start {m_placeGrid->get_bounds().left, m_placeGrid->get_bounds().top};
-			sf::IntRect bounds {m_defenseGrid->get_bounds()};
+			sf::Vector2i start {place_grid.get_bounds().left, place_grid.get_bounds().top};
+			sf::IntRect bounds {defense_grid.get_bounds()};
 			for(int i = 1; i <= 5; ++i)
 			{
 				int shipSize {(i < 3 ? i + 1 : i)};
-				m_ships.push_back(Ship{start, shipSize});
+				ships.push_back(Ship{start, shipSize});
 				do
 				{
 					if(random_static::get(0, 100) < 50)
-						m_ships.back().rotate();
+						ships.back().rotate();
 					sf::Vector2i offset {random_static::get(bounds.left, bounds.left + bounds.width), random_static::get(bounds.top, bounds.top + bounds.height)};
-					m_ships.back().setOffset(offset);
-				} while(!placeable(&m_ships.back()));
+					ships.back().setOffset(offset);
+				} while(!placeable(&ships.back()));
 			}
 		}
 
 		void updateFoundShip()
 		{
-			sf::Vector2i index {m_lastShot.index};
-			if(!m_foundOrigin)
+			sf::Vector2i index {lastShot.index};
+			if(!foundOrigin)
 			{
-				m_foundShip = sf::IntRect{index.x, index.y, 1, 1};
+				foundShip = sf::IntRect{index.x, index.y, 1, 1};
 			}
 			else
 			{
-				m_foundShip.left = (index.x < m_foundShip.left ? index.x : m_foundShip.left);
-				m_foundShip.top = (index.y < m_foundShip.top ? index.y : m_foundShip.top);
-				if(m_direction == Dir::R || m_direction == Dir::L)
-					++m_foundShip.width;
-				if(m_direction == Dir::U || m_direction == Dir::D)
-					++m_foundShip.height;
+				foundShip.left = (index.x < foundShip.left ? index.x : foundShip.left);
+				foundShip.top = (index.y < foundShip.top ? index.y : foundShip.top);
+				if(direction == Dir::R || direction == Dir::L)
+					++foundShip.width;
+				if(direction == Dir::U || direction == Dir::D)
+					++foundShip.height;
 			}
 		}
 		void updatePossibleShots()
 		{
-			sf::IntRect rect {m_foundShip};
+			sf::IntRect rect {foundShip};
 			for(int y = 0; y < rect.height + 2; ++y)
 			{
 				for(int x = 0; x < rect.width + 2; ++x)
 				{
 					sf::Vector2i index {rect.left - 1 + x, rect.top - 1 + y};
-					if(m_possibleShots.find(index) != m_possibleShots.end())
-						m_possibleShots.erase(index);
+					if(possible_shots.find(index) != possible_shots.end())
+						possible_shots.erase(index);
 				}
 			}
 		}
 
 		void setDirection(Dir d)
 		{
-			m_direction = d;
+			direction = d;
 			switch(d)
 			{
-				case Dir::U: m_diff = sf::Vector2i{0, -1}; break;
-				case Dir::R: m_diff = sf::Vector2i{1, 0}; break;
-				case Dir::D: m_diff = sf::Vector2i{0, 1}; break;
-				case Dir::L: m_diff = sf::Vector2i{-1, 0}; break;
+				case Dir::U: diff = sf::Vector2i{0, -1}; break;
+				case Dir::R: diff = sf::Vector2i{1, 0}; break;
+				case Dir::D: diff = sf::Vector2i{0, 1}; break;
+				case Dir::L: diff = sf::Vector2i{-1, 0}; break;
 				default: break;
 			}
 		}
 		void rotateDirection()
 		{
-			switch(m_direction)
+			switch(direction)
 			{
 				case Dir::U: setDirection(Dir::R); break;
 				case Dir::R: setDirection(Dir::D); break;
@@ -113,7 +116,7 @@ class ComputerPlayer : public Player
 		}
 		void reverseDirection()
 		{
-			switch(m_direction)
+			switch(direction)
 			{
 				case Dir::U: setDirection(Dir::D); break;
 				case Dir::R: setDirection(Dir::L); break;
@@ -122,13 +125,13 @@ class ComputerPlayer : public Player
 				default: break;
 			}
 		}
-		bool isHit(sf::Vector2i index) const { return m_markers.at(index).is_hit(); }
+		bool isHit(sf::Vector2i index) const { return markers.at(index).is_hit(); }
 
 	public:
-		ComputerPlayer(const Grid* attackGrid, const Grid* defenseGrid, const Grid* placeGrid) :
-			Player{attackGrid, defenseGrid, placeGrid},
-			m_foundOrigin{false}, m_foundPlane{false}, m_foundEnd1{false}, m_foundEnd2{false},
-			m_delayLimit{60}, m_delayCounter{0}
+		ComputerPlayer(Grid& attack_grid, Grid& defense_grid, Grid& place_grid) :
+			Player{attack_grid, defense_grid, place_grid},
+			foundOrigin{false}, foundPlane{false}, foundEnd1{false}, foundEnd2{false},
+			delayLimit{60}, delayCounter{0}
 		{
 			fillShips();
 			setDirection(static_cast<Dir>(random_static::get(0, 3)));
@@ -136,66 +139,66 @@ class ComputerPlayer : public Player
 
 		sf::Vector2i makeShot()
 		{
-			if(!m_foundOrigin && !m_foundPlane)
+			if(!foundOrigin && !foundPlane)
 			{
-				if(m_lastShot.hit)
+				if(lastShot.hit)
 				{
-					m_foundOrigin = true;
-					m_origin = m_lastShot.index;
+					foundOrigin = true;
+					origin = lastShot.index;
 
-					sf::Vector2i index {m_origin + m_diff};
+					sf::Vector2i index {origin + diff};
 					while(!shootable(index))
 					{
 						rotateDirection();
-						index = m_origin + m_diff;
+						index = origin + diff;
 					}
 					return index;
 				}
 				else
 				{
-					return *random_static::get(m_possibleShots);
+					return *random_static::get(possible_shots);
 				}
 			}
 
-			if(m_foundOrigin && !m_foundPlane)
+			if(foundOrigin && !foundPlane)
 			{
-				if(!m_lastShot.hit)
+				if(!lastShot.hit)
 				{
 					rotateDirection();
-					sf::Vector2i index {m_origin + m_diff};
+					sf::Vector2i index {origin + diff};
 					while(!shootable(index))
 					{
 						rotateDirection();
-						index = m_origin + m_diff;
+						index = origin + diff;
 					}
 					return index;
 				}
 				else
 				{
-					m_foundPlane = true;
+					foundPlane = true;
 
-					sf::Vector2i index {m_lastShot.index + m_diff};
+					sf::Vector2i index {lastShot.index + diff};
 					bool test {true};
 					while(test)
 					{
-						if(!m_attackGrid->contains(index))
+						if(!attack_grid.contains(index))
 						{
-							m_foundEnd1 = true;
+							foundEnd1 = true;
 							reverseDirection();
 							test = false;
 						}
 						else
 						{
-							auto markerItr {m_markers.find(index)};
-							if(markerItr != m_markers.end())
+							auto markerItr {markers.find(index)};
+							if(markerItr != markers.end())
 							{
 								if(markerItr->second.is_hit())
 								{
-									index = index + m_diff;
+									index = index + diff;
 								}
 								else
 								{
-									m_foundEnd1 = true;
+									foundEnd1 = true;
 									reverseDirection();
 									test = false;
 								}
@@ -208,34 +211,34 @@ class ComputerPlayer : public Player
 					}
 				}
 			}
-			if(m_foundOrigin && m_foundPlane)
+			if(foundOrigin && foundPlane)
 			{
-				if(!m_foundEnd1 && !m_foundEnd2)
+				if(!foundEnd1 && !foundEnd2)
 				{
-					if(m_lastShot.hit)
+					if(lastShot.hit)
 					{
-						sf::Vector2i index {m_lastShot.index + m_diff};
+						sf::Vector2i index {lastShot.index + diff};
 						bool test {true};
 						while(test)
 						{
-							if(!m_attackGrid->contains(index))
+							if(!attack_grid.contains(index))
 							{
-								m_foundEnd1 = true;
+								foundEnd1 = true;
 								reverseDirection();
 								test = false;
 							}
 							else
 							{
-								auto markerItr {m_markers.find(index)};
-								if(markerItr != m_markers.end())
+								auto markerItr {markers.find(index)};
+								if(markerItr != markers.end())
 								{
 									if(markerItr->second.is_hit())
 									{
-										index = index + m_diff;
+										index = index + diff;
 									}
 									else
 									{
-										m_foundEnd1 = true;
+										foundEnd1 = true;
 										reverseDirection();
 										test = false;
 									}
@@ -249,30 +252,30 @@ class ComputerPlayer : public Player
 					}
 					else
 					{
-						m_foundEnd1 = true;
+						foundEnd1 = true;
 						reverseDirection();
 
-						sf::Vector2i index {m_lastShot.index + m_diff};
+						sf::Vector2i index {lastShot.index + diff};
 						bool test {true};
 						while(test)
 						{
-							if(!m_attackGrid->contains(index))
+							if(!attack_grid.contains(index))
 							{
-								m_foundEnd2 = true;
+								foundEnd2 = true;
 								test = false;
 							}
 							else
 							{
-								auto markerItr {m_markers.find(index)};
-								if(markerItr != m_markers.end())
+								auto markerItr {markers.find(index)};
+								if(markerItr != markers.end())
 								{
 									if(markerItr->second.is_hit())
 									{
-										index = index + m_diff;
+										index = index + diff;
 									}
 									else
 									{
-										m_foundEnd2 = true;
+										foundEnd2 = true;
 										test = false;
 									}
 								}
@@ -284,31 +287,31 @@ class ComputerPlayer : public Player
 						}
 					}
 				}
-				if(m_foundEnd1 && !m_foundEnd2)
+				if(foundEnd1 && !foundEnd2)
 				{
-					if(m_lastShot.hit)
+					if(lastShot.hit)
 					{
-						sf::Vector2i index {m_lastShot.index + m_diff};
+						sf::Vector2i index {lastShot.index + diff};
 						bool test {true};
 						while(test)
 						{
-							if(!m_attackGrid->contains(index))
+							if(!attack_grid.contains(index))
 							{
-								m_foundEnd2 = true;
+								foundEnd2 = true;
 								test = false;
 							}
 							else
 							{
-								auto markerItr {m_markers.find(index)};
-								if(markerItr != m_markers.end())
+								auto markerItr {markers.find(index)};
+								if(markerItr != markers.end())
 								{
 									if(markerItr->second.is_hit())
 									{
-										index = index + m_diff;
+										index = index + diff;
 									}
 									else
 									{
-										m_foundEnd2 = true;
+										foundEnd2 = true;
 										test = false;
 									}
 								}
@@ -321,43 +324,43 @@ class ComputerPlayer : public Player
 					}
 					else
 					{
-						m_foundEnd2 = true;
+						foundEnd2 = true;
 					}
 				}
-				if(m_foundEnd1 && m_foundEnd2)
+				if(foundEnd1 && foundEnd2)
 				{
-					m_foundOrigin = false;
-					m_foundPlane = false;
-					m_foundEnd1 = false;
-					m_foundEnd2 = false;
+					foundOrigin = false;
+					foundPlane = false;
+					foundEnd1 = false;
+					foundEnd2 = false;
 
 					setDirection(static_cast<Dir>(random_static::get(0, 3)));
 
 					updatePossibleShots();
-					m_foundShip = sf::IntRect{0, 0, 0, 0};
+					foundShip = sf::IntRect{0, 0, 0, 0};
 
-					return *random_static::get(m_possibleShots);
+					return *random_static::get(possible_shots);
 				}
 			}
-			return *random_static::get(m_possibleShots);
+			return *random_static::get(possible_shots);
 		}
-		void markShot(sf::Vector2i index, bool isHit) override
+		void mark_shot(sf::Vector2i index, bool isHit) override
 		{
-			Player::markShot(index, isHit);
+			Player::mark_shot(index, isHit);
 
-			m_lastShot.index = index;
-			m_lastShot.hit = isHit;
+			lastShot.index = index;
+			lastShot.hit = isHit;
 
-			if(isHit && !m_foundEnd2)
+			if(isHit && !foundEnd2)
 				updateFoundShip();
 		}
 
 		void startThinking()
 		{
-			m_delayLimit = random_static::get(20, 60);
-			m_delayCounter = 0;
+			delayLimit = random_static::get(20, 60);
+			delayCounter = 0;
 		}
-		void think() { ++m_delayCounter; }
-		bool isThinking() const { return m_delayCounter < m_delayLimit; }
+		void think() { ++delayCounter; }
+		bool isThinking() const { return delayCounter < delayLimit; }
 };
 }
