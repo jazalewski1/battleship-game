@@ -1,7 +1,7 @@
 #include "common/Common.hpp"
 #include "game/Game.hpp"
 #include "game/Grid.hpp"
-#include "game/Players.hpp"
+#include "game/Player.hpp"
 #include "gui/Button.hpp"
 #include "gui/Endscreen.hpp"
 #include "gui/Particles.hpp"

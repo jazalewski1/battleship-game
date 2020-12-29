@@ -3,8 +3,9 @@ set(
 	include/game/Cell.hpp
 	include/game/Game.hpp
 	include/game/Grid.hpp
+	include/game/HumanPlayer.hpp
 	include/game/Marker.hpp
-	include/game/Players.hpp
+	include/game/Player.hpp
 	include/game/Ship.hpp
 )
 
