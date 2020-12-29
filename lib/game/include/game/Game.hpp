@@ -314,17 +314,17 @@ private:
 	{
 		if (selected_cell && confirm_button.isActive())
 		{
-			sf::Vector2i index{selected_cell->get_index()};
-			bool isHit{opponent.isShip(index)};
-			human.markShot(index, isHit);
+			const auto index = sf::Vector2i{selected_cell->get_index()};
+			const auto is_hit = opponent.isShip(index);
+			human.markShot(index, is_hit);
 
 			selected_cell->put_default_color();
 			selected_cell = nullptr;
 
 			human_points_text.setString("  Human: ", human.getPoints(), "/", 17);
-			message_text.append((isHit ? " It's a hit!" : " It's a miss..."));
+			message_text.append((is_hit ? " It's a hit!" : " It's a miss..."));
 
-			if (isHit)
+			if (is_hit)
 			{
 				hit_emitter.setPosition(common::index_to_center_position(index));
 				hit_emitter.emit();
@@ -347,14 +347,14 @@ private:
 
 	void take_opponent_shot()
 	{
-		sf::Vector2i index{opponent.makeShot()};
-		bool isHit{human.isShip(index)};
-		opponent.markShot(index, isHit);
+		const auto index = sf::Vector2i{opponent.makeShot()};
+		const auto is_hit = human.isShip(index);
+		opponent.markShot(index, is_hit);
 
-		message_text.append((isHit ? " It's a hit!" : " It's a miss."));
+		message_text.append((is_hit ? " It's a hit!" : " It's a miss."));
 		opponent_points_text.setString("Computer: ", opponent.getPoints(), "/", 17);
 
-		if (isHit)
+		if (is_hit)
 		{
 			hit_emitter.setPosition(common::index_to_center_position(index));
 			hit_emitter.emit();
@@ -385,7 +385,7 @@ private:
 			{
 				if (selected_cell)
 				{
-					std::pair<char, char> label{attack_grid.get_symbols(selected_cell->get_index())};
+					const auto label = attack_grid.get_symbols(selected_cell->get_index());
 					message_text.setString(" You selected: ", label.first, label.second);
 				}
 				else
