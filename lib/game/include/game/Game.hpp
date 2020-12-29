@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SFML/Graphics.hpp"
 #include "common/Common.hpp"
 #include "game/Game.hpp"
 #include "game/Grid.hpp"
@@ -9,7 +10,6 @@
 #include "gui/Particles.hpp"
 #include "gui/Sfline.hpp"
 #include "util/Sfutils.hpp"
-#include "SFML/Graphics.hpp"
 #include <iostream>
 #include <memory>
 
@@ -18,20 +18,15 @@ namespace game
 class Game : public sf::Drawable
 {
 public:
-	Game() : attack_grid{2, 4, common::single_board_size, common::single_board_size},
-					defense_grid{2, 16, common::single_board_size, common::single_board_size},
-					place_grid{14, 16, 6, 10},
-					human{&attack_grid, &defense_grid, &place_grid},
-					opponent{&defense_grid, &attack_grid, &place_grid},
-					turn{Turn::NONE}, mode{Mode::PLACE},
-					selected_ship{nullptr},
-					cell_on_hover{nullptr}, selected_cell{nullptr},
-					hit_emitter{0.0f, 0.0f, 360.0f}, miss_emitter{0.0f, 0.0f, 360.0f},
-					confirm_button{14, 10, 6, 3},
-					human_points_text{common::index_to_screen_position(sf::Vector2i{14, 5})},
-					opponent_points_text{common::index_to_screen_position(sf::Vector2i{14, 6})},
-					message_text{common::index_to_screen_position(sf::Vector2i{2, 1})},
-					end_screen{}, do_reset{false}
+	Game() :
+		attack_grid{2, 4, common::single_board_size, common::single_board_size},
+		defense_grid{2, 16, common::single_board_size, common::single_board_size},
+		place_grid{14, 16, 6, 10}, human{&attack_grid, &defense_grid, &place_grid}, opponent{&defense_grid, &attack_grid, &place_grid},
+		turn{Turn::NONE}, mode{Mode::PLACE}, selected_ship{nullptr}, cell_on_hover{nullptr}, selected_cell{nullptr},
+		hit_emitter{0.0f, 0.0f, 360.0f}, miss_emitter{0.0f, 0.0f, 360.0f}, confirm_button{14, 10, 6, 3},
+		human_points_text{common::index_to_screen_position(sf::Vector2i{14, 5})},
+		opponent_points_text{common::index_to_screen_position(sf::Vector2i{14, 6})},
+		message_text{common::index_to_screen_position(sf::Vector2i{2, 1})}, end_screen{}, do_reset{false}
 	{
 		hit_emitter.setEmitSpan(360.0f);
 		hit_emitter.setEmitCount(100);
@@ -185,7 +180,10 @@ public:
 		}
 	}
 
-	bool reset() const { return do_reset; }
+	bool reset() const
+	{
+		return do_reset;
+	}
 
 private:
 	enum class Turn
@@ -212,9 +210,9 @@ private:
 	Turn turn;
 	Mode mode;
 
-	Ship *selected_ship;
-	Cell *cell_on_hover;
-	Cell *selected_cell;
+	Ship* selected_ship;
+	Cell* cell_on_hover;
+	Cell* selected_cell;
 
 	ParticleSystem::Emitter hit_emitter;
 	ParticleSystem::Emitter miss_emitter;
@@ -227,7 +225,7 @@ private:
 	EndScreen end_screen;
 	bool do_reset;
 
-	void draw(sf::RenderTarget &target, sf::RenderStates states) const
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const
 	{
 		target.draw(attack_grid, states);
 		target.draw(defense_grid, states);
@@ -281,7 +279,7 @@ private:
 				cell_on_hover->put_default_color();
 			}
 
-			cell_on_hover = attack_grid.getCell(mouse);
+			cell_on_hover = attack_grid.get_cell(mouse);
 			if (cell_on_hover && cell_on_hover != selected_cell)
 			{
 				cell_on_hover->put_hover_color();
@@ -306,7 +304,7 @@ private:
 		}
 		if (human.shootable(mouse))
 		{
-			selected_cell = attack_grid.getCell(mouse);
+			selected_cell = attack_grid.get_cell(mouse);
 			if (selected_cell)
 				selected_cell->put_select_color();
 		}
@@ -339,7 +337,7 @@ private:
 
 			if (human.getPoints() >= 17)
 			{
-				mode = Mode::FINISH;	
+				mode = Mode::FINISH;
 			}
 
 			opponent.startThinking();
@@ -387,7 +385,7 @@ private:
 			{
 				if (selected_cell)
 				{
-					std::pair<char, char> label{attack_grid.getSymbols(selected_cell->get_index())};
+					std::pair<char, char> label{attack_grid.get_symbols(selected_cell->get_index())};
 					message_text.setString(" You selected: ", label.first, label.second);
 				}
 				else

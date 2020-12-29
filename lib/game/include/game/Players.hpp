@@ -43,7 +43,7 @@ class Player : public sf::Drawable
 			m_attackGrid{attackGrid}, m_defenseGrid{defenseGrid}, m_placeGrid{placeGrid},
 			m_points{0}
 		{
-			sf::IntRect bounds {m_attackGrid->getBounds()};
+			sf::IntRect bounds {m_attackGrid->get_bounds()};
 			for(int y = 0; y < bounds.height; ++y)
 			{
 				for(int x = 0; x < bounds.width; ++x)
@@ -145,7 +145,7 @@ class HumanPlayer : public Player
 
 		void fillShips() override
 		{
-			sf::Vector2i start {m_placeGrid->getBounds().left, m_placeGrid->getBounds().top};
+			sf::Vector2i start {m_placeGrid->get_bounds().left, m_placeGrid->get_bounds().top};
 			m_ships.push_back(Ship{start.x, start.y + 0, 5});
 			m_ships.push_back(Ship{start.x, start.y + 2, 4});
 			m_ships.push_back(Ship{start.x, start.y + 4, 3});
@@ -162,7 +162,7 @@ class HumanPlayer : public Player
 
 		bool isReady() const
 		{
-			sf::IntRect gridBounds {m_defenseGrid->getBounds()};
+			sf::IntRect gridBounds {m_defenseGrid->get_bounds()};
 			for(const auto& ship : m_ships)
 			{
 				sf::IntRect shipBounds {ship.getBounds()};
@@ -227,8 +227,8 @@ class ComputerPlayer : public Player
 
 		void fillShips() override
 		{
-			sf::Vector2i start {m_placeGrid->getBounds().left, m_placeGrid->getBounds().top};
-			sf::IntRect bounds {m_defenseGrid->getBounds()};
+			sf::Vector2i start {m_placeGrid->get_bounds().left, m_placeGrid->get_bounds().top};
+			sf::IntRect bounds {m_defenseGrid->get_bounds()};
 			for(int i = 1; i <= 5; ++i)
 			{
 				int shipSize {(i < 3 ? i + 1 : i)};
