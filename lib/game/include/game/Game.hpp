@@ -100,12 +100,12 @@ public:
 
 			if (cell_on_hover)
 			{
-				cell_on_hover->defaultColor();
+				cell_on_hover->put_default_color();
 			}
 			cell_on_hover = nullptr;
 			if (selected_cell)
 			{
-				selected_cell->defaultColor();
+				selected_cell->put_default_color();
 			}
 			selected_cell = nullptr;
 		}
@@ -278,20 +278,20 @@ private:
 		{
 			if (cell_on_hover && cell_on_hover != selected_cell)
 			{
-				cell_on_hover->defaultColor();
+				cell_on_hover->put_default_color();
 			}
 
 			cell_on_hover = attack_grid.getCell(mouse);
 			if (cell_on_hover && cell_on_hover != selected_cell)
 			{
-				cell_on_hover->hoverColor();
+				cell_on_hover->put_hover_color();
 			}
 		}
 		else
 		{
 			if (cell_on_hover && cell_on_hover != selected_cell)
 			{
-				cell_on_hover->defaultColor();
+				cell_on_hover->put_default_color();
 			}
 			cell_on_hover = nullptr;
 		}
@@ -301,14 +301,14 @@ private:
 	{
 		if (selected_cell)
 		{
-			selected_cell->defaultColor();
+			selected_cell->put_default_color();
 			selected_cell = nullptr;
 		}
 		if (human.shootable(mouse))
 		{
 			selected_cell = attack_grid.getCell(mouse);
 			if (selected_cell)
-				selected_cell->selectColor();
+				selected_cell->put_select_color();
 		}
 	}
 
@@ -316,11 +316,11 @@ private:
 	{
 		if (selected_cell && confirm_button.isActive())
 		{
-			sf::Vector2i index{selected_cell->getIndex()};
+			sf::Vector2i index{selected_cell->get_index()};
 			bool isHit{opponent.isShip(index)};
 			human.markShot(index, isHit);
 
-			selected_cell->defaultColor();
+			selected_cell->put_default_color();
 			selected_cell = nullptr;
 
 			human_points_text.setString("  Human: ", human.getPoints(), "/", 17);
@@ -387,7 +387,7 @@ private:
 			{
 				if (selected_cell)
 				{
-					std::pair<char, char> label{attack_grid.getSymbols(selected_cell->getIndex())};
+					std::pair<char, char> label{attack_grid.getSymbols(selected_cell->get_index())};
 					message_text.setString(" You selected: ", label.first, label.second);
 				}
 				else

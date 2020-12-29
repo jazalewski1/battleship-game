@@ -101,7 +101,7 @@ class GridLabeled : public Grid
 			auto searchX {m_labels.find(sf::Vector2i{index.x, m_offset.y - 1})};
 			auto searchY {m_labels.find(sf::Vector2i{m_offset.x - 1, index.y})};
 			if(searchX != m_labels.end() && searchY != m_labels.end())
-				return std::make_pair(searchX->second.getSymbol(), searchY->second.getSymbol());
+				return std::make_pair(searchX->second.get_symbol(), searchY->second.get_symbol());
 			else
 				return std::make_pair('?', '?');
 		}

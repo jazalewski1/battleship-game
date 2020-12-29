@@ -9,88 +9,104 @@ namespace game
 {
 class Cell : public sf::Drawable
 {
-	protected:
-		sf::RectangleShape m_shape;
-		sf::Vector2f m_size;
-		sf::Vector2i m_index;
-		sf::Vector2f m_pos;
-		sf::Vector2f m_center;
+public:
+	Cell(sf::Vector2i index) :
+		shape{sf::Vector2f{common::cell_size, common::cell_size}}, size{common::cell_size, common::cell_size}, index{index},
+		position{index.x * common::cell_size, index.y * common::cell_size}, center{common::index_to_center_position(index)},
+		default_color{sf::Color::Transparent}, color_on_hover{245, 242, 201, 100}, color_on_select{245, 242, 201, 180}
+	{
+		shape.setPosition(position);
+		shape.setFillColor(sf::Color::Transparent);
+		shape.setOutlineColor(sf::Color{245, 242, 201});
+		shape.setOutlineThickness(0.5f);
+	}
 
-		sf::Color m_defaultColor;
-		sf::Color m_hoverColor;
-		sf::Color m_selectColor;
+	Cell(int indexX, int indexY) : Cell{sf::Vector2i{indexX, indexY}}
+	{
+	}
 
+	Cell() : Cell{sf::Vector2i{0, 0}}
+	{
+	}
 
-	protected:
-		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
-		{
-			target.draw(m_shape, states);
-		}
+	virtual bool contains(sf::Vector2f vector)
+	{
+		return shape.getLocalBounds().contains(vector);
+	}
 
+	virtual bool contains(float position_x, float position_y)
+	{
+		return contains(sf::Vector2f{position_x, position_y});
+	}
 
-	public:
-		Cell(sf::Vector2i index) :
-			m_shape{sf::Vector2f{common::cell_size, common::cell_size}}, m_size{common::cell_size, common::cell_size},
-			m_index{index}, m_pos{index.x * common::cell_size, index.y * common::cell_size}, m_center{common::index_to_center_position(index)},
-			m_defaultColor{sf::Color::Transparent}, m_hoverColor{245, 242, 201, 100}, m_selectColor{245, 242, 201, 180}
-		{
-			m_shape.setPosition(m_pos);
-			m_shape.setFillColor(sf::Color::Transparent);
-			m_shape.setOutlineColor(sf::Color{245, 242, 201});
-			m_shape.setOutlineThickness(0.5f);
-		}
-		Cell(int indexX, int indexY) :
-			Cell{sf::Vector2i{indexX, indexY}}
-		{
-		}
-		Cell() :
-			Cell{sf::Vector2i{0, 0}}
-		{
-		}
+	virtual sf::Vector2i get_index() const
+	{
+		return index;
+	}
 
-		virtual bool contains(sf::Vector2f test) { return m_shape.getLocalBounds().contains(test); }
-		virtual bool contains(float posX, float posY) { return contains(sf::Vector2f{posX, posY}); }
+	void put_default_color()
+	{
+		shape.setFillColor(default_color);
+	}
 
-		virtual sf::Vector2i getIndex() const { return m_index; }
-		virtual sf::Vector2f getPosition() const { return m_pos; }
-		virtual sf::Vector2f getCenter() const { return m_center; }
+	void put_hover_color()
+	{
+		shape.setFillColor(color_on_hover);
+	}
 
-		void defaultColor() { m_shape.setFillColor(m_defaultColor); }
-		void hoverColor() { m_shape.setFillColor(m_hoverColor); }
-		void selectColor() { m_shape.setFillColor(m_selectColor); }
+	void put_select_color()
+	{
+		shape.setFillColor(color_on_select);
+	}
+
+protected:
+	sf::RectangleShape shape;
+	const sf::Vector2f size;
+	const sf::Vector2i index;
+	const sf::Vector2f position;
+	const sf::Vector2f center;
+	sf::Color default_color;
+	sf::Color color_on_hover;
+	sf::Color color_on_select;
+
+	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
+	{
+		target.draw(shape, states);
+	}
 };
-
 
 class LabelCell : public Cell
 {
-	private:
-		Gui::Text m_text;
-		char m_symbol;
+public:
+	LabelCell(sf::Vector2i index, char symbol) :
+		Cell{index}, text{center}, symbol{symbol}
+	{
+		shape.setOutlineThickness(0.0f);
 
-	private:
-		void draw(sf::RenderTarget& target, sf::RenderStates states) const override
-		{
-			Cell::draw(target, states);
-			target.draw(m_text);
-		}
+		text.setFont(common::font);
+		text.setString(symbol);
+		text.alignToCenter();
+		text.setFillColor(color_on_select);
+	}
+	LabelCell(int indexX, int indexY, char symbol) :
+		LabelCell{sf::Vector2i{indexX, indexY}, symbol}
+	{
+	}
 
-	public:
-		LabelCell(sf::Vector2i index, char symbol) :
-			Cell{index}, m_text{m_center}, m_symbol{symbol}
-		{
-			m_shape.setOutlineThickness(0.0f);
+	char get_symbol() const
+	{
+		return symbol;
+	}
 
-			m_text.setFont(common::font);
-			m_text.setString(m_symbol);
-			m_text.alignToCenter();
-			m_text.setFillColor(m_selectColor);
-		}
-		LabelCell(int indexX, int indexY, char symbol) :
-			LabelCell{sf::Vector2i{indexX, indexY} ,symbol}
-		{
-		}
+private:
+	Gui::Text text;
+	char symbol;
 
-		char getSymbol() const { return m_symbol; }
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+	{
+		Cell::draw(target, states);
+		target.draw(text);
+	}
 };
 } // namespace game
 
