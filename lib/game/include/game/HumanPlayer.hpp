@@ -30,7 +30,7 @@ public:
 		const auto grid_bounds = defense_grid.get_bounds();
 		for (const auto& ship : ships) // TODO: find_if
 		{
-			const auto ship_bounds = ship.getBounds();
+			const auto ship_bounds = ship.get_bounds();
 			if (!(grid_bounds.contains(ship_bounds.left, ship_bounds.top) && // TODO: too verbose
 				  grid_bounds.contains(ship_bounds.left + ship_bounds.width - 1, ship_bounds.top + ship_bounds.height - 1)))
 			{

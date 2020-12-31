@@ -4,106 +4,116 @@
 #include "SFML/Graphics.hpp"
 #include "common/Common.hpp"
 
+namespace game
+{
 class Ship : public sf::Drawable
 {
-	private:
-		enum Rotation {HOR, VER};
+public:
+	Ship(sf::Vector2i offset, int length) :
+		shape{sf::Vector2f{length * common::cell_size, common::cell_size}}, offset{offset}, size{length, 1},
+		bounds{offset.x, offset.y, length, 1}, center{common::index_to_screen_position(offset) + (shape.getSize() * 0.5f)}, rotation{HORIZONTAL}
+	{
+		shape.setOrigin(shape.getSize() * 0.5f);
 
-	private:
-		sf::RectangleShape m_shape;
-		sf::Vector2i m_offset;
-		sf::Vector2i m_size;
-		sf::IntRect m_bounds;
-		sf::Vector2f m_center;
-		Rotation m_rotation;
+		shape.setPosition(center);
+		shape.setFillColor(sf::Color{200, 200, 200});
+		shape.setOutlineColor(sf::Color{100, 100, 100});
+		shape.setOutlineThickness(3.0f);
+	}
 
-	private:
-		void draw(sf::RenderTarget& target, sf::RenderStates states) const
+	Ship(int offset_x, int offset_y, int length) : Ship{sf::Vector2i{offset_x, offset_y}, length}
+	{
+	}
+
+	void adjust(sf::Vector2f center)
+	{
+		const auto diff = sf::Vector2f{(shape.getSize().x * 0.5f) - (common::cell_size * 0.5f), (shape.getSize().y * 0.5f) - (common::cell_size * 0.5f)};
+		offset = common::screen_position_to_index(center - diff);
+		bounds = sf::IntRect{offset, size};
+		center = common::index_to_screen_position(offset) + (shape.getSize() * 0.5f);
+		shape.setPosition(center);
+	}
+
+	void adjust(float pos_x, float pos_y)
+	{
+		adjust(sf::Vector2f{pos_x, pos_y});
+	}
+
+	bool contains(sf::Vector2i index) const
+	{
+		return bounds.contains(index);
+	}
+
+	bool contains(int index_x, int index_y) const
+	{
+		return bounds.contains(sf::Vector2i{index_x, index_y});
+	}
+
+	void rotate()
+	{
+		if (rotation == HORIZONTAL)
 		{
-			target.draw(m_shape, states);
+			rotation = VERTICAL;
+
+			size.y = size.x;
+			size.x = 1;
 		}
-
-
-	public:
-		Ship(sf::Vector2i offset, int length) :
-			m_shape{sf::Vector2f{length * common::cell_size, common::cell_size}},
-			m_offset{offset}, m_size{length, 1}, m_bounds{offset.x, offset.y, length, 1},
-			m_center{common::index_to_screen_position(offset) + (m_shape.getSize() * 0.5f)}, m_rotation{HOR}
+		else
 		{
-			m_shape.setOrigin(m_shape.getSize() * 0.5f);
+			rotation = HORIZONTAL;
 
-			m_shape.setPosition(m_center);
-			m_shape.setFillColor(sf::Color{200, 200, 200});
-			m_shape.setOutlineColor(sf::Color{100, 100, 100});
-			m_shape.setOutlineThickness(3.0f);
+			size.x = size.y;
+			size.y = 1;
 		}
-		Ship(int offsetX, int offsetY, int length) :
-			Ship{sf::Vector2i{offsetX, offsetY}, length}
-		{
-		}
+		shape.setOrigin(shape.getSize() * -0.5f);
+		shape.setSize(sf::Vector2f{size.x * common::cell_size, size.y * common::cell_size});
+		shape.setOrigin(shape.getSize() * 0.5f);
+	}
 
+	sf::IntRect get_bounds() const
+	{
+		return bounds;
+	}
 
-		void adjust(sf::Vector2f center)
-		{
-			sf::Vector2f diff {(m_shape.getSize().x * 0.5f) - (common::cell_size * 0.5f), (m_shape.getSize().y * 0.5f) - (common::cell_size * 0.5f)};
-			m_offset = common::screen_position_to_index(center - diff);
-			m_bounds = sf::IntRect{m_offset, m_size};
-			m_center = common::index_to_screen_position(m_offset) + (m_shape.getSize() * 0.5f);
-			m_shape.setPosition(m_center);
-		}
-		void adjust(float posX, float posY) { adjust(sf::Vector2f{posX, posY}); }
+	sf::IntRect get_ghost_bounds() const
+	{
+		const auto diff = sf::Vector2f{(shape.getSize().x * 0.5f) - (common::cell_size * 0.5f), (shape.getSize().y * 0.5f) - (common::cell_size * 0.5f)};
+		const auto offset = sf::Vector2i{common::screen_position_to_index(center - diff)};
+		return sf::IntRect{offset, size};
+	}
 
-		bool contains(sf::Vector2i index) const { return m_bounds.contains(index); }
-		bool contains(int indexX, int indexY) const { return m_bounds.contains(sf::Vector2i{indexX, indexY}); }
+	void set_center(sf::Vector2f center)
+	{
+		center = center;
+		shape.setPosition(center);
+	}
 
-		void rotate()
-		{
-			if(m_rotation == HOR)
-			{
-				m_rotation = VER;
+	void set_offset(sf::Vector2i offset)
+	{
+		offset = offset;
+		bounds = sf::IntRect{offset, size};
+		center = common::index_to_screen_position(offset) + (shape.getSize() * 0.5f);
+		shape.setPosition(center);
+	}
 
-				m_size.y = m_size.x;
-				m_size.x = 1;
-			}
-			else
-			{
-				m_rotation = HOR;
+private:
+	enum Rotation
+	{
+		HORIZONTAL,
+		VERTICAL
+	};
 
-				m_size.x = m_size.y;
-				m_size.y = 1;
-			}
-			m_shape.setOrigin(m_shape.getSize() * -0.5f);
-			m_shape.setSize(sf::Vector2f{m_size.x * common::cell_size, m_size.y * common::cell_size});
-			m_shape.setOrigin(m_shape.getSize() * 0.5f);
-		}
+	sf::RectangleShape shape;
+	sf::Vector2i offset;
+	sf::Vector2i size;
+	sf::IntRect bounds;
+	sf::Vector2f center;
+	Rotation rotation;
 
-
-		sf::IntRect getBounds() const { return m_bounds; }
-		sf::IntRect getGhostBounds() const
-		{
-			sf::Vector2f diff {(m_shape.getSize().x * 0.5f) - (common::cell_size * 0.5f), (m_shape.getSize().y * 0.5f) - (common::cell_size * 0.5f)};
-			sf::Vector2i offset {common::screen_position_to_index(m_center - diff)};
-			return sf::IntRect{offset, m_size};
-		}
-
-
-		void setCenter(sf::Vector2f center)
-		{
-			m_center = center;
-			m_shape.setPosition(m_center);
-		}
-		void setCenter(float posX, float posY) { setCenter(sf::Vector2f{posX, posY}); }
-
-		void setOffset(sf::Vector2i offset)
-		{
-			m_offset = offset;
-			m_bounds = sf::IntRect{m_offset, m_size};
-			m_center = common::index_to_screen_position(m_offset) + (m_shape.getSize() * 0.5f);
-			m_shape.setPosition(m_center);
-		}
-
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const
+	{
+		target.draw(shape, states);
+	}
 };
-
-
-
+} // namespace game
 #endif

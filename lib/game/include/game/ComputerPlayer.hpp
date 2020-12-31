@@ -324,7 +324,7 @@ private:
 				sf::Vector2i offset{random_static::get(bounds.left, bounds.left + bounds.width),
 									random_static::get(bounds.top, bounds.top + bounds.height)};
 
-				ships.back().setOffset(offset);
+				ships.back().set_offset(offset);
 			} while (!placeable(&ships.back()));
 		}
 	}

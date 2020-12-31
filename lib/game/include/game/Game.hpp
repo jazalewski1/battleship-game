@@ -115,7 +115,7 @@ public:
 		{
 			if (selected_ship)
 			{
-				selected_ship->setCenter(mouse);
+				selected_ship->set_center(mouse);
 			}
 		}
 

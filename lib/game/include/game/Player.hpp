@@ -42,7 +42,7 @@ public:
 
 	bool placeable(const Ship* ship) const
 	{
-		const auto ship_bounds = ship->getGhostBounds();
+		const auto ship_bounds = ship->get_ghost_bounds();
 		for (int y = 0; y < ship_bounds.height; ++y)
 		{
 			for (int x = 0; x < ship_bounds.width; ++x)
