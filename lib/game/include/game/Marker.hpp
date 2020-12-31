@@ -4,6 +4,8 @@
 #include "SFML/Graphics.hpp"
 #include "common/Common.hpp"
 
+namespace game
+{
 class Marker : public sf::Drawable
 {
 public:
@@ -67,5 +69,5 @@ private:
 		}
 	}
 };
-
+} // namespace game
 #endif
