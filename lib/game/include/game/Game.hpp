@@ -72,7 +72,7 @@ public:
 
 		if (mode == Mode::PLACE)
 		{
-			confirm_button.setActive(human.isReady() && !selected_ship);
+			confirm_button.setActive(human.is_ready() && !selected_ship);
 		}
 		if (mode == Mode::ATTACK)
 		{
@@ -163,7 +163,7 @@ public:
 	{
 		if (mode == Mode::ATTACK)
 		{
-			human.markGuess(common::screen_position_to_index(mouse));
+			human.mark_guess(common::screen_position_to_index(mouse));
 		}
 	}
 
