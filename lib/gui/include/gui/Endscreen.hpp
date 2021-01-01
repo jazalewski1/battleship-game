@@ -4,7 +4,7 @@
 #include "SFML/Graphics.hpp"
 #include "common/Common.hpp"
 #include "gui/Button.hpp"
-#include "gui/Guitext.hpp"
+#include "gui/Text.hpp"
 
 namespace game
 {
@@ -18,23 +18,23 @@ public:
 		background.setFillColor(sf::Color{240, 235, 189, 220});
 		background.setPosition(common::index_to_screen_position(sf::Vector2i{0, 9}));
 
-		text.setFont(common::font);
-		text.setPosition(common::window_size.x * 0.5f, 360.0f);
-		text.setFillColor(sf::Color::Black);
-		text.setCharacterSize(72);
-		text.alignToCenterX();
+		text.set_font(common::font);
+		text.set_position(common::window_size.x * 0.5f, 360.0f);
+		text.set_fill_color(sf::Color::Black);
+		text.set_character_size(72);
+		text.align_to_center_x();
 
 		button.set_string("RESTART");
 	}
 
 	void set_human_won()
 	{
-		text.setString("YOU WIN!");
+		text.set_string("YOU WIN!");
 	}
 
 	void set_opponent_won()
 	{
-		text.setString("YOU LOSE...");
+		text.set_string("YOU LOSE...");
 	}
 
 	bool button_pressed(sf::Vector2f mouse)
@@ -44,7 +44,7 @@ public:
 
 private:
 	sf::RectangleShape background;
-	Gui::Text text;
+	gui::Text text;
 	game::Button button;
 
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const

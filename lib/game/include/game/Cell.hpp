@@ -3,7 +3,7 @@
 
 #include "SFML/Graphics.hpp"
 #include "common/Common.hpp"
-#include "gui/Guitext.hpp"
+#include "gui/Text.hpp"
 
 namespace game
 {
@@ -83,10 +83,11 @@ public:
 	{
 		shape.setOutlineThickness(0.0f);
 
-		text.setFont(common::font);
-		text.setString(symbol);
-		text.alignToCenter();
-		text.setFillColor(color_on_select);
+		text.set_font(common::font);
+		const auto string = std::string{symbol};
+		text.set_string(string);
+		text.align_to_center();
+		text.set_fill_color(color_on_select);
 	}
 	LabelCell(int index_x, int index_y, char symbol) :
 		LabelCell{sf::Vector2i{index_x, index_y}, symbol}
@@ -99,7 +100,7 @@ public:
 	}
 
 private:
-	Gui::Text text;
+	gui::Text text;
 	const char symbol;
 
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override

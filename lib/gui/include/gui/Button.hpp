@@ -3,7 +3,7 @@
 
 #include "SFML/Graphics.hpp"
 #include "common/Common.hpp"
-#include "gui/Guitext.hpp"
+#include "gui/Text.hpp"
 
 namespace game
 {
@@ -21,10 +21,10 @@ public:
 
 		center = common::index_to_screen_position(offset) + (shape.getSize() * 0.5f);
 
-		text.setFont(common::font);
-		text.setCharacterSize(32);
-		text.alignToCenter();
-		text.setPosition(center);
+		text.set_font(common::font);
+		text.set_character_size(32);
+		text.align_to_center();
+		text.set_position(center);
 	}
 
 	bool pressed(sf::Vector2f mouse)
@@ -46,7 +46,7 @@ public:
 
 	void set_string(const std::string& string)
 	{
-		text.setString(string);
+		text.set_string(string);
 	}
 
 	bool is_active() const
@@ -64,7 +64,7 @@ private:
 	sf::Color active_color_detail;
 	sf::Color unactive_color;
 	sf::Color unactive_color_detail;
-	Gui::Text text;
+	gui::Text text;
 
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const
 	{
@@ -78,13 +78,13 @@ private:
 		{
 			shape.setFillColor(active_color);
 			shape.setOutlineColor(active_color_detail);
-			text.setFillColor(active_color_detail);
+			text.set_fill_color(active_color_detail);
 		}
 		else
 		{
 			shape.setFillColor(unactive_color);
 			shape.setOutlineColor(unactive_color_detail);
-			text.setFillColor(unactive_color_detail);
+			text.set_fill_color(unactive_color_detail);
 		}
 	}
 };

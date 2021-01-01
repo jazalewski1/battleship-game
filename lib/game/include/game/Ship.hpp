@@ -25,10 +25,10 @@ public:
 	{
 	}
 
-	void adjust(sf::Vector2f center)
+	void adjust(sf::Vector2f new_center)
 	{
 		const auto diff = sf::Vector2f{(shape.getSize().x * 0.5f) - (common::cell_size * 0.5f), (shape.getSize().y * 0.5f) - (common::cell_size * 0.5f)};
-		offset = common::screen_position_to_index(center - diff);
+		offset = common::screen_position_to_index(new_center - diff);
 		bounds = sf::IntRect{offset, size};
 		center = common::index_to_screen_position(offset) + (shape.getSize() * 0.5f);
 		shape.setPosition(center);
@@ -42,11 +42,6 @@ public:
 	bool contains(sf::Vector2i index) const
 	{
 		return bounds.contains(index);
-	}
-
-	bool contains(int index_x, int index_y) const
-	{
-		return bounds.contains(sf::Vector2i{index_x, index_y});
 	}
 
 	void rotate()
@@ -82,15 +77,15 @@ public:
 		return sf::IntRect{offset, size};
 	}
 
-	void set_center(sf::Vector2f center)
+	void set_center(sf::Vector2f new_center)
 	{
-		center = center;
+		center = new_center;
 		shape.setPosition(center);
 	}
 
-	void set_offset(sf::Vector2i offset)
+	void set_offset(sf::Vector2i new_offset)
 	{
-		offset = offset;
+		offset = new_offset;
 		bounds = sf::IntRect{offset, size};
 		center = common::index_to_screen_position(offset) + (shape.getSize() * 0.5f);
 		shape.setPosition(center);
