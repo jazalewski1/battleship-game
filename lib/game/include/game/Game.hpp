@@ -166,7 +166,7 @@ public:
 		}
 		if (mode == Mode::FINISH)
 		{
-			if (end_screen.buttonPressed(mouse))
+			if (end_screen.button_pressed(mouse))
 			{
 				do_reset = true;
 			}
@@ -419,12 +419,12 @@ private:
 			if (human.get_points() > opponent.get_points())
 			{
 				message_text.setString("Finish! You win!");
-				end_screen.setScreen(true);
+				end_screen.set_human_won();
 			}
 			else
 			{
 				message_text.setString("Finish! You lose...");
-				end_screen.setScreen(false);
+				end_screen.set_opponent_won();
 			}
 		}
 	}

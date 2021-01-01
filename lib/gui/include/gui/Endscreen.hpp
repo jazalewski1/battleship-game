@@ -2,50 +2,58 @@
 #define ENDSCREEN_HPP
 
 #include "SFML/Graphics.hpp"
-#include "gui/Button.hpp"
 #include "common/Common.hpp"
+#include "gui/Button.hpp"
 #include "gui/Guitext.hpp"
 
 namespace game
 {
 class EndScreen : public sf::Drawable
 {
-	private:
-		sf::RectangleShape m_background;
-		Gui::Text m_text;
-		game::Button m_button;
+public:
+	EndScreen() :
+		background{sf::Vector2f{common::index_to_screen_position(sf::Vector2i{common::grid_size.x, 10})}}, text{},
+		button{{7, 14}, {8, 3}, true}
+	{
+		background.setFillColor(sf::Color{240, 235, 189, 220});
+		background.setPosition(common::index_to_screen_position(sf::Vector2i{0, 9}));
 
-	private:
-		void draw(sf::RenderTarget& target, sf::RenderStates states) const
-		{
-			target.draw(m_background, states);
-			target.draw(m_text, states);
-			target.draw(m_button, states);
-		}
+		text.setFont(common::font);
+		text.setPosition(common::window_size.x * 0.5f, 360.0f);
+		text.setFillColor(sf::Color::Black);
+		text.setCharacterSize(72);
+		text.alignToCenterX();
 
-	public:
-		EndScreen() :
-			m_background{sf::Vector2f{common::index_to_screen_position(sf::Vector2i{common::grid_size.x, 10})}},
-			m_text{},
-			m_button{{7, 14}, {8, 3}, true}
-		{
-			m_background.setFillColor(sf::Color{240, 235, 189, 220});
-			m_background.setPosition(common::index_to_screen_position(sf::Vector2i{0, 9}));
+		button.set_string("RESTART");
+	}
 
-			m_text.setFont(common::font);
-			m_text.setPosition(common::window_size.x * 0.5f, 360.0f);
-			m_text.setFillColor(sf::Color::Black);
-			m_text.setCharacterSize(72);
-			m_text.alignToCenterX();
+	void set_human_won()
+	{
+		text.setString("YOU WIN!");
+	}
 
-			m_button.set_string("RESTART");
-		}
+	void set_opponent_won()
+	{
+		text.setString("YOU LOSE...");
+	}
 
-		void setScreen(bool humanWon) { m_text.setString((humanWon ? "YOU WIN!" : "YOU LOSE...")); }
+	bool button_pressed(sf::Vector2f mouse)
+	{
+		return button.pressed(mouse);
+	}
 
-		bool buttonPressed(sf::Vector2f mouse) { return m_button.pressed(mouse); }
+private:
+	sf::RectangleShape background;
+	Gui::Text text;
+	game::Button button;
+
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const
+	{
+		target.draw(background, states);
+		target.draw(text, states);
+		target.draw(button, states);
+	}
 };
-
-}
+} // namespace game
 
 #endif
