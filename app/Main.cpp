@@ -4,7 +4,7 @@
 #include "game/Player.hpp"
 #include "gui/Button.hpp"
 #include "gui/Endscreen.hpp"
-#include "util/Sfutils.hpp"
+#include "util/HashVector2.hpp"
 #include "SFML/Graphics.hpp"
 #include <iostream>
 #include <memory>

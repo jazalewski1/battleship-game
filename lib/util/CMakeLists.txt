@@ -1,6 +1,6 @@
 set(
 	HEADERS
-	include/util/Sfutils.hpp
+	include/util/HashVector2.hpp
 	include/util/Random.hpp	
 )
 

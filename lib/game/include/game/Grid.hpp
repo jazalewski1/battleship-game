@@ -4,7 +4,7 @@
 #include "SFML/Graphics.hpp"
 #include "common/Common.hpp"
 #include "game/Cell.hpp"
-#include "util/Sfutils.hpp"
+#include "util/HashVector2.hpp"
 #include <unordered_map>
 
 namespace game
