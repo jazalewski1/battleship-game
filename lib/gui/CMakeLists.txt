@@ -1,9 +1,8 @@
 set(
 	HEADERS
 	include/gui/Button.hpp
-	include/gui/Text.hpp
-	include/gui/Sfline.hpp
 	include/gui/Endscreen.hpp	
+	include/gui/Text.hpp
 )
 
 set(
