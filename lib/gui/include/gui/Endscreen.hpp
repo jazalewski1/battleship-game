@@ -27,7 +27,7 @@ class EndScreen : public sf::Drawable
 		EndScreen() :
 			m_background{sf::Vector2f{common::index_to_screen_position(sf::Vector2i{common::grid_size.x, 10})}},
 			m_text{},
-			m_button{7, 14, 8, 3, true}
+			m_button{{7, 14}, {8, 3}, true}
 		{
 			m_background.setFillColor(sf::Color{240, 235, 189, 220});
 			m_background.setPosition(common::index_to_screen_position(sf::Vector2i{0, 9}));
@@ -38,7 +38,7 @@ class EndScreen : public sf::Drawable
 			m_text.setCharacterSize(72);
 			m_text.alignToCenterX();
 
-			m_button.setText("RESTART");
+			m_button.set_string("RESTART");
 		}
 
 		void setScreen(bool humanWon) { m_text.setString((humanWon ? "YOU WIN!" : "YOU LOSE...")); }

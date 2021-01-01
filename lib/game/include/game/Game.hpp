@@ -25,7 +25,7 @@ public:
 		defense_grid{2, 16, common::single_board_size, common::single_board_size},
 		place_grid{14, 16, 6, 10}, human{attack_grid, defense_grid, place_grid}, opponent{defense_grid, attack_grid, place_grid},
 		turn{Turn::NONE}, mode{Mode::PLACE}, selected_ship{nullptr}, cell_on_hover{nullptr}, selected_cell{nullptr},
-		hit_emitter{0.0f, 0.0f, 360.0f}, miss_emitter{0.0f, 0.0f, 360.0f}, confirm_button{14, 10, 6, 3},
+		hit_emitter{0.0f, 0.0f, 360.0f}, miss_emitter{0.0f, 0.0f, 360.0f}, confirm_button{{14, 10}, {6, 3}},
 		human_points_text{common::index_to_screen_position(sf::Vector2i{14, 5})},
 		opponent_points_text{common::index_to_screen_position(sf::Vector2i{14, 6})},
 		message_text{common::index_to_screen_position(sf::Vector2i{2, 1})}, end_screen{}, do_reset{false}
@@ -72,17 +72,31 @@ public:
 
 		if (mode == Mode::PLACE)
 		{
-			confirm_button.setActive(human.is_ready() && !selected_ship);
+			if(human.is_ready() && !selected_ship)
+			{
+				confirm_button.activate();
+			}
+			else
+			{
+				confirm_button.deactivate();
+			}
 		}
 		if (mode == Mode::ATTACK)
 		{
 			if (turn == Turn::HUMAN)
 			{
-				confirm_button.setActive(selected_cell != nullptr);
+				if(selected_cell != nullptr)
+				{
+					confirm_button.activate();
+				}
+				else
+				{
+					confirm_button.deactivate();
+				}
 			}
 			if (turn == Turn::OPPONENT)
 			{
-				confirm_button.setActive(false);
+				confirm_button.deactivate();
 
 				opponent.think();
 				if (!opponent.is_thinking())
@@ -93,7 +107,7 @@ public:
 		}
 		if (mode == Mode::FINISH)
 		{
-			confirm_button.setActive(false);
+			confirm_button.deactivate();
 
 			if (cell_on_hover)
 			{
@@ -314,7 +328,7 @@ private:
 
 	void take_human_shot()
 	{
-		if (selected_cell && confirm_button.isActive())
+		if (selected_cell && confirm_button.is_active())
 		{
 			const auto index = sf::Vector2i{selected_cell->get_index()};
 			const auto is_hit = opponent.contains_ship(index);
