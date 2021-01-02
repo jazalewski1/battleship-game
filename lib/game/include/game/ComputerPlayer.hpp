@@ -1,21 +1,20 @@
 #pragma once
 
 #include "game/Player.hpp"
-#include "util/Random.hpp"
+#include "util/RandomGenerator.hpp"
 
 namespace game
 {
-using random_static = effolkronium::random_static;
-
 class ComputerPlayer : public Player
 {
 public:
 	ComputerPlayer(Grid& attack_grid, Grid& defense_grid, Grid& place_grid) :
-		Player{attack_grid, defense_grid, place_grid}, found_origin{false}, found_plane{false}, found_end1{false}, found_end2{false},
+		Player{attack_grid, defense_grid, place_grid}, random_generator{},
+		found_origin{false}, found_plane{false}, found_end1{false}, found_end2{false},
 		delay_limit{60}, delay_counter{0}
 	{
 		fill_ships();
-		set_direction(static_cast<Dir>(random_static::get(0, 3)));
+		set_direction(static_cast<Dir>(random_generator.next(0, 3)));
 	}
 
 	sf::Vector2i make_shot()
@@ -37,7 +36,7 @@ public:
 			}
 			else
 			{
-				const auto random_shot = random_static::get(possible_shots);
+				const auto random_shot = random_generator.next(possible_shots.begin(), possible_shots.end());
 				return *random_shot;
 			}
 		}
@@ -223,15 +222,15 @@ public:
 				found_end1 = false;
 				found_end2 = false;
 
-				set_direction(static_cast<Dir>(random_static::get(0, 3)));
+				set_direction(static_cast<Dir>(random_generator.next(0, 3)));
 
 				update_possible_shots();
 				found_ship = sf::IntRect{0, 0, 0, 0};
 
-				return *random_static::get(possible_shots);
+				return *random_generator.next(possible_shots.begin(), possible_shots.end());
 			}
 		}
-		return *random_static::get(possible_shots);
+		return *random_generator.next(possible_shots.begin(), possible_shots.end());
 	}
 
 	void mark_shot(sf::Vector2i index, bool is_hit) override
@@ -249,7 +248,7 @@ public:
 
 	void start_thinking()
 	{
-		delay_limit = random_static::get(20, 60);
+		delay_limit = random_generator.next(20, 60);
 		delay_counter = 0;
 	}
 
@@ -285,6 +284,7 @@ private:
 	sf::Vector2i origin;
 	Dir direction;
 	sf::Vector2i diff;
+	util::RandomGenerator random_generator;
 	bool found_origin;
 	bool found_plane;
 	bool found_end1;
@@ -316,13 +316,13 @@ private:
 
 			do
 			{
-				if (random_static::get(0, 100) < 50)
+				if (random_generator.next(0, 100) < 50)
 				{
 					ships.back().rotate();
 				}
 
-				sf::Vector2i offset{random_static::get(bounds.left, bounds.left + bounds.width),
-									random_static::get(bounds.top, bounds.top + bounds.height)};
+				sf::Vector2i offset{random_generator.next(bounds.left, bounds.left + bounds.width),
+									random_generator.next(bounds.top, bounds.top + bounds.height)};
 
 				ships.back().set_offset(offset);
 			} while (!placeable(&ships.back()));

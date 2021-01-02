@@ -1,7 +1,7 @@
 set(
 	HEADERS
 	include/util/HashVector2.hpp
-	include/util/Random.hpp	
+	include/util/RandomGenerator.hpp
 )
 
 set(
